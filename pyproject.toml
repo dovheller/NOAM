@@ -25,6 +25,7 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["tests"]
 markers = [
   "mtp: requires a real MTP device attached",
 ]

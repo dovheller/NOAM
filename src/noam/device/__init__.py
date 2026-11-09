@@ -1,18 +1,20 @@
 """WP2 — שכבת גישה למכשיר."""
-from .base import DeviceInfo, Entry, Source
+from .base import DeviceInfo, Entry, Sink, Source
 from .errors import DeviceDisconnected, DeviceError, MTPError
 from .mass_storage import MassStorageSource
 from .mtp import MTPSource
-from .registry import scan
+from .registry import TARGET_MARKER, scan
 
 __all__ = [
+    "TARGET_MARKER",
+    "DeviceDisconnected",
+    "DeviceError",
     "DeviceInfo",
     "Entry",
-    "Source",
-    "DeviceError",
-    "DeviceDisconnected",
     "MTPError",
-    "MassStorageSource",
     "MTPSource",
+    "MassStorageSource",
+    "Sink",
+    "Source",
     "scan",
 ]

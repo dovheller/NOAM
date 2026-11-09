@@ -1,27 +1,14 @@
-"""WP2 — MassStorageSource: כרטיס SD או דיסק שממופה כתיקייה."""
+"""WP2 — MassStorageSource: כרטיס SD או דיסק שממופה כתיקייה. מומלץ למפות read-only."""
 from __future__ import annotations
 
 from collections.abc import Iterator
 from pathlib import Path
-from typing import BinaryIO
 
-from .base import DeviceInfo, Entry, Source
+from .base import DeviceInfo, Entry, Sink, Source
+from .categories import GroupNamer, category
+from .errors import DeviceDisconnected, DeviceError
 
-
-_IMAGE_EXT = {".jpg", ".jpeg", ".png", ".heic", ".gif", ".webp", ".bmp"}
-_VIDEO_EXT = {".mp4", ".mov", ".mkv", ".avi", ".3gp", ".webm"}
-_DOC_EXT = {".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".txt", ".rtf"}
-
-
-def _category(path: Path) -> str:
-    ext = path.suffix.lower()
-    if ext in _IMAGE_EXT:
-        return "images"
-    if ext in _VIDEO_EXT:
-        return "video"
-    if ext in _DOC_EXT:
-        return "docs"
-    return "other"
+CHUNK = 1024 * 1024
 
 
 class MassStorageSource(Source):
@@ -32,32 +19,38 @@ class MassStorageSource(Source):
         self.label = label
 
     def info(self) -> DeviceInfo:
-        return DeviceInfo(
-            device_id=f"mass-{self.root.name}",
-            model=self.label,
-            interface="mass_storage",
-        )
+        return DeviceInfo(device_id=f"mass-{self.root.name}", model=self.label, interface="mass_storage")
 
     def walk(self) -> Iterator[Entry]:
+        if not self.root.is_dir():
+            raise DeviceDisconnected(self.info().device_id)
+        groups = GroupNamer()
         idx = 0
-        group_by_dir: dict[Path, str] = {}
         for path in sorted(self.root.rglob("*")):
-            if not path.is_file():
+            # קישור סימבולי יכול להוביל אל מחוץ למקור — מדלגים.
+            if path.is_symlink() or not path.is_file():
                 continue
-            parent = path.parent
-            if parent not in group_by_dir:
-                group_by_dir[parent] = f"g{len(group_by_dir) + 1:02d}"
+            rel = path.relative_to(self.root)
             yield Entry(
                 idx=idx,
-                group=group_by_dir[parent],
-                rel_path=str(path.relative_to(self.root)),
+                group=groups(rel.parent.as_posix()),
+                rel_path=rel.as_posix(),
                 size=path.stat().st_size,
-                category=_category(path),
+                category=category(path.name),
             )
             idx += 1
 
-    def open(self, entry: Entry) -> BinaryIO:
-        return open(self.root / entry.rel_path, "rb")
-
-    def close(self) -> None:
-        pass
+    def stream(self, entry: Entry, write: Sink) -> None:
+        path = self.root / entry.rel_path
+        try:
+            with path.open("rb") as fh:
+                while chunk := fh.read(CHUNK):
+                    write(chunk)
+        except FileNotFoundError as e:
+            if not self.root.is_dir():
+                raise DeviceDisconnected(self.info().device_id) from e
+            raise DeviceError("file vanished") from e
+        except OSError as e:
+            if not self.root.is_dir():
+                raise DeviceDisconnected(self.info().device_id) from e
+            raise DeviceError(f"read failed (errno={e.errno})") from e
