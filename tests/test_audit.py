@@ -1,6 +1,7 @@
 """WP1 — היומן מסרב לשדות תוכן."""
+
 import pytest
-from pathlib import Path
+
 from noam.session.audit import AuditLog, ContentLeakError
 
 
@@ -38,3 +39,16 @@ def test_audit_chain_and_tamper(audit):
     audit.path.write_text("\n".join(lines) + "\n")
     with pytest.raises(ValueError, match="signature"):
         audit.verify()
+
+
+def test_missing_key_fails_loudly(tmp_path, monkeypatch):
+    monkeypatch.delenv("NOAM_AUDIT_KEY", raising=False)
+    monkeypatch.delenv("NOAM_DEV", raising=False)
+    with pytest.raises(RuntimeError, match="NOAM_AUDIT_KEY"):
+        AuditLog(tmp_path / "a.jsonl")
+
+
+def test_dev_key_only_with_flag(tmp_path, monkeypatch):
+    monkeypatch.delenv("NOAM_AUDIT_KEY", raising=False)
+    monkeypatch.setenv("NOAM_DEV", "1")
+    AuditLog(tmp_path / "a.jsonl").record("x", status="ok")

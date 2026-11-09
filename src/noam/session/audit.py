@@ -5,7 +5,7 @@ import hashlib
 import hmac
 import json
 import os
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -41,8 +41,7 @@ class ContentLeakError(ValueError):
 class AuditLog:
     def __init__(self, path: Path, key: bytes | None = None) -> None:
         self.path = Path(path)
-        env_key = os.environ.get("NOAM_AUDIT_KEY", "")
-        self.key = key or (env_key.encode() if env_key else b"dev-only-key-change-me!!")
+        self.key = key or _key_from_env()
         if len(self.key) < 16:
             raise ValueError("HMAC key must be at least 16 bytes")
         self._prev_hash = self._tail_hash()
@@ -102,7 +101,7 @@ class AuditLog:
 
     def _append(self, fields: dict[str, Any]) -> dict:
         entry = dict(fields)
-        entry.setdefault("ts", datetime.now(timezone.utc).isoformat(timespec="seconds"))
+        entry.setdefault("ts", datetime.now(UTC).isoformat(timespec="seconds"))
         entry["prev_hash"] = self._prev_hash
         payload = _canonical(entry)
         entry["sig"] = hmac.new(self.key, payload, hashlib.sha256).hexdigest()
@@ -138,6 +137,22 @@ class AuditLog:
                 fh.seek(pos)
             last = fh.readline().decode("utf-8").rstrip("\n")
         return hashlib.sha256(last.encode("utf-8")).hexdigest()
+
+
+DEV_KEY = b"dev-only-key-change-me!!"
+
+
+def _key_from_env() -> bytes:
+    """מפתח ה-HMAC מגיע מ-NOAM_AUDIT_KEY. בלי מפתח — נכשלים, לא ממשיכים בשקט.
+    מפתח הפיתוח הקבוע זמין רק עם NOAM_DEV=1, ואסור בעמדה אמיתית."""
+    env_key = os.environ.get("NOAM_AUDIT_KEY", "")
+    if env_key:
+        return env_key.encode()
+    if os.environ.get("NOAM_DEV") == "1":
+        return DEV_KEY
+    raise RuntimeError(
+        "NOAM_AUDIT_KEY is not set. Set it on the station, or NOAM_DEV=1 for local development only."
+    )
 
 
 def _canonical(entry: dict) -> bytes:
