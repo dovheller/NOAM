@@ -14,7 +14,7 @@ dependencies = [
 
 [project.optional-dependencies]
 layer2 = ["wa-crypt-tools"]
-dev = ["pytest>=8", "ruff>=0.5", "pre-commit>=3.7"]
+dev = ["pytest>=8", "ruff>=0.5", "pre-commit>=3.7", "pypdf>=4"]
 
 [build-system]
 requires = ["setuptools>=68"]
@@ -22,6 +22,9 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"noam.report" = ["fonts/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
