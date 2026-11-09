@@ -19,7 +19,8 @@
 - קריסה ב-worker thread חייבת להגיע לממשק כהודעה. כשל שקט אסור.
 
 ## WhatsApp (שכבה 2)
-- לא `adb backup`, לא `WhatsApp-Key-DB-Extractor`. פענוח רק עם `wa-crypt-tools`.
+- לא `adb backup`, לא `WhatsApp-Key-DB-Extractor`. פענוח וייצוא: `KnugiHK/WhatsApp-Chat-Exporter` (MIT), עם `--check-update` כבוי.
+- **רישיונות:** אסור להעתיק או לייבא קוד GPL לתוך `src/` (`wa-crypt-tools`, `msgstore-viewer`, `whatstk`). GPL מותר רק כתהליך משנה. ריפו בלי קובץ רישיון (whapa) — אסור לגמרי.
 - `key` (קובץ, crypt14, דורש root) ≠ `backup key` (64 תווים הקסדצימליים, crypt15). לא לבלבל.
 - בלי מפתח אין שירות ואין חיוב.
 

@@ -18,6 +18,8 @@
 | `src/noam/` | שלד הקוד של הקיוסק (שכבה 1) |
 | `src/noam_l2/` | שלד הקוד של ארכיון WhatsApp (שכבה 2) |
 | `tests/` | בדיקות (ממתינות למימוש) |
+| `docs/CONSOLIDATION_SPEC.md` | איחוד כמה מכשירים ומקורות לתיקייה אחת (WP13–15) |
+| `docs/REPO_CANDIDATES.md` | ספריות וכלים פתוחים שנבדקו: מה לוקחים, מה לא, ולמה |
 | `docs/WHATSAPP_ARCHIVE_SPEC.md` | אפיון שחזור ארכיון WhatsApp, שכבה 2 (גרסה מתוקנת) |
 
 קובצי `.dc.html` הם פורמט של Claude Design ונטענים דרך `support.js`.

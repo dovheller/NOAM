@@ -13,7 +13,8 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-layer2 = ["wa-crypt-tools"]
+layer2 = ["whatsapp-chat-exporter"]
+consolidate = ["imagehash>=4.3", "filetype>=1.2", "libarchive-c>=5"]
 dev = ["pytest>=8", "ruff>=0.5", "pre-commit>=3.7", "pypdf>=4"]
 
 [build-system]
