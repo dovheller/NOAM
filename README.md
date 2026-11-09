@@ -7,7 +7,7 @@
 | נתיב | תוכן |
 |---|---|
 | `mockup/NOAM Mockup.dc.html` | המוקאפ הקליקבילי (מקור): קונסולת המפעיל, מסך נועם, ממשק הלקוח, ארכיון WhatsApp (שכבה 2) |
-| `mockup/NOAM Mockup (standalone).html` | גרסה ארוזה בקובץ אחד, נפתחת ישירות בדפדפן (בלי לשונית WhatsApp) |
+| `mockup/NOAM Mockup (standalone).html` | גרסה ארוזה בקובץ אחד עם כל ארבע הלשוניות — נפתחת בכל דפדפן, גם בלי אינטרנט (רק הגופן דורש רשת) |
 | `mockup/noam-standalone-src.dc.html` | המקור של הגרסה הארוזה |
 | `mockup/support.js`, `mockup/assets/` | ה-runtime והתמונות של המוקאפ |
 | `docs/WHATSAPP_ARCHIVE_SPEC.md` | אפיון שחזור ארכיון WhatsApp, שכבה 2 (גרסה מתוקנת) |
