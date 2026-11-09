@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<template id="__bundler_thumbnail" data-bg-color="#1f3a5f"><svg viewBox="0 0 1200 800" xmlns="http://www.w3.org/2000/svg"><rect width="1200" height="800" fill="#1f3a5f"/><g transform="translate(420 220) scale(15)" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8l7.5 3v5.6c0 4.6-3.1 8.2-7.5 9.8-4.4-1.6-7.5-5.2-7.5-9.8V5.8z" stroke="#ffffff" stroke-width="1.5"/><path d="M8.6 12.2l2.4 2.4 4.6-4.8" stroke="#9fd6a8" stroke-width="1.7"/></g></svg></template>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  html, body { margin:0; padding:0; background:#e8edf3; }
+  body { font-family:Heebo, system-ui, sans-serif; color:#1c2430; -webkit-font-smoothing:antialiased; }
+  * { box-sizing:border-box; }
+  a { color:#2f6fb2; text-decoration:none; }
+  a:hover { color:#1f3a5f; text-decoration:underline; }
+  button { font-family:inherit; }
+  @keyframes noamPulse { 0%,100% { opacity:.35 } 50% { opacity:1 } }
+  @keyframes noamStripe { from { background-position:0 0 } to { background-position:32px 0 } }
+  @keyframes noamSpin { to { transform:rotate(360deg) } }
+</style>
+</helmet>
+<div dir="rtl" style="min-height:100vh;background:#e8edf3;padding:0 0 40px">
+
+  <div style="display:flex;align-items:center;gap:20px;padding:14px 28px;background:#1f3a5f;color:#fff">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="width:40px;height:40px;border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8l7.5 3v5.6c0 4.6-3.1 8.2-7.5 9.8-4.4-1.6-7.5-5.2-7.5-9.8V5.8z" stroke="#1f3a5f" stroke-width="1.7"></path><path d="M8.6 12.2l2.4 2.4 4.6-4.8" stroke="#2e8b57" stroke-width="1.9"></path></svg></div>
+      <div>
+        <div style="font-size:18px;font-weight:700;line-height:1.2">נועם הלר</div>
+        <div style="font-size:11px;color:rgba(255,255,255,.75)">גיבוי · העברה · שחזור נתונים — בפרטיות מלאה</div>
+      </div>
+    </div>
+    <div style="flex:1"></div>
+    <div style="font-size:12px;color:rgba(255,255,255,.7)">מוקאפ ויזואלי · נתונים מדומים</div>
+    <div style="display:flex;background:rgba(255,255,255,.12);border-radius:10px;padding:4px;gap:4px">
+      <sc-for list="{{ flowTabs }}" as="ft" hint-placeholder-count="3">
+        <button onClick="{{ ft.go }}" style="border:0;cursor:pointer;padding:8px 16px;border-radius:7px;font-size:14px;font-weight:600;background:{{ ft.bg }};color:{{ ft.fg }}">{{ ft.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:24px;align-items:flex-start;padding:24px 28px;max-width:1560px;margin:0 auto">
+
+    <div style="width:236px;flex:0 0 236px;background:#fff;border:1px solid #d7dee7;border-radius:12px;padding:14px;box-shadow:0 1px 3px rgba(28,36,48,.06)">
+      <div style="font-size:12px;color:#5c6672;padding:4px 8px 10px">{{ navTitle }}</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <sc-for list="{{ navItems }}" as="item" hint-placeholder-count="7">
+          <button onClick="{{ item.go }}" style="text-align:right;border:0;cursor:pointer;padding:10px 12px;border-radius:8px;font-size:14px;font-weight:500;display:flex;align-items:center;gap:10px;background:{{ item.bg }};color:{{ item.fg }}">
+            <span style="font-size:11px;opacity:.65;min-width:14px">{{ item.n }}</span>
+            <span>{{ item.label }}</span>
+          </button>
+        </sc-for>
+      </div>
+      <div style="margin-top:16px;padding:12px;background:#f4f7fa;border-radius:8px;font-size:12px;color:#5c6672;line-height:1.6">
+        המפעיל אינו רואה תוכן של הלקוח — ספירות, סטטוס ואימות בלבד.
+      </div>
+    </div>
+
+    <div style="flex:1;min-width:0">
+
+      <!-- ===================== OPERATOR: תור סשנים ===================== -->
+      <sc-if value="{{ sQueue }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#f4f7fa;border:1px solid #d7dee7;border-radius:12px;padding:28px">
+          <div style="display:flex;align-items:flex-end;gap:16px;margin-bottom:22px">
+            <div>
+              <h1 style="margin:0;font-size:28px;font-weight:700">תור סשנים</h1>
+              <div style="font-size:12px;color:#5c6672;margin-top:6px">עמדה <span style="direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace">ST-02</span> · מפעיל: נועם ב.</div>
+            </div>
+            <div style="flex:1"></div>
+            <button onClick="{{ goNew }}" style="border:0;cursor:pointer;background:#2f6fb2;color:#fff;font-size:15px;font-weight:600;padding:13px 24px;border-radius:10px;box-shadow:0 2px 6px rgba(47,111,178,.28)">+ סשן חדש</button>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:22px">
+            <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;padding:16px">
+              <div style="font-size:12px;color:#5c6672">פעיל כרגע</div>
+              <div style="font-size:26px;font-weight:700;color:#2f6fb2;margin-top:4px">1</div>
+            </div>
+            <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;padding:16px">
+              <div style="font-size:12px;color:#5c6672">ממתין</div>
+              <div style="font-size:26px;font-weight:700;margin-top:4px">3</div>
+            </div>
+            <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;padding:16px">
+              <div style="font-size:12px;color:#5c6672">הושלם היום</div>
+              <div style="font-size:26px;font-weight:700;color:#2e8b57;margin-top:4px">7</div>
+            </div>
+            <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;padding:16px">
+              <div style="font-size:12px;color:#5c6672">מקום פנוי ביעד</div>
+              <div style="font-size:26px;font-weight:700;margin-top:4px;direction:ltr;unicode-bidi:isolate">1.8 TB</div>
+            </div>
+          </div>
+
+          <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:96px 1.4fr 1fr .9fr .9fr 130px;gap:12px;padding:12px 18px;background:#f4f7fa;border-bottom:1px solid #d7dee7;font-size:12px;color:#5c6672;font-weight:500">
+              <div>תיק</div><div>לקוח</div><div>שירות</div><div>שפה</div><div>נכנס</div><div>סטטוס</div>
+            </div>
+            <sc-for list="{{ queue }}" as="row" hint-placeholder-count="4">
+              <div onClick="{{ row.go }}" style="display:grid;grid-template-columns:96px 1.4fr 1fr .9fr .9fr 130px;gap:12px;padding:15px 18px;border-bottom:1px solid #eef2f6;font-size:15px;align-items:center;cursor:pointer">
+                <div style="direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace;font-size:13px;color:#5c6672">{{ row.file }}</div>
+                <div style="font-weight:500">{{ row.name }}</div>
+                <div>{{ row.service }}</div>
+                <div style="color:#5c6672">{{ row.lang }}</div>
+                <div style="direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace;font-size:13px;color:#5c6672">{{ row.time }}</div>
+                <div>
+                  <span style="display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:5px 11px;border-radius:20px;background:{{ row.chipBg }};color:{{ row.chipFg }}">
+                    <span style="width:7px;height:7px;border-radius:50%;background:{{ row.chipFg }}"></span>{{ row.status }}
+                  </span>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===================== OPERATOR: פתיחת סשן ===================== -->
+      <sc-if value="{{ sNew }}">
+        <div style="background:#f4f7fa;border:1px solid #d7dee7;border-radius:12px;padding:28px">
+          <h1 style="margin:0 0 6px;font-size:28px;font-weight:700">פתיחת סשן חדש</h1>
+          <div style="font-size:12px;color:#5c6672;margin-bottom:22px">הפרטים נשמרים ביומן הסשנים ומוטבעים בדוח החתום.</div>
+          <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;padding:24px;max-width:760px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+              <div>
+                <label style="display:block;font-size:14px;font-weight:500;margin-bottom:6px">מספר תיק</label>
+                <input value="2026-0418" style="width:100%;padding:11px 12px;border:1px solid #d7dee7;border-radius:8px;font-size:15px;direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace;color:#1c2430">
+                <div style="font-size:12px;color:#5c6672;margin-top:5px">מזהה רץ אוטומטי, ניתן לעריכה.</div>
+              </div>
+              <div>
+                <label style="display:block;font-size:14px;font-weight:500;margin-bottom:6px">שם לקוח</label>
+                <input value="מרים לוינגר" style="width:100%;padding:11px 12px;border:1px solid #d7dee7;border-radius:8px;font-size:15px;font-family:inherit;color:#1c2430">
+              </div>
+              <div>
+                <label style="display:block;font-size:14px;font-weight:500;margin-bottom:6px">טלפון</label>
+                <input value="052-000-0000" style="width:100%;padding:11px 12px;border:1px solid #d7dee7;border-radius:8px;font-size:15px;direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace;color:#1c2430">
+              </div>
+              <div>
+                <label style="display:block;font-size:14px;font-weight:500;margin-bottom:6px">שפת הלקוח</label>
+                <select style="width:100%;padding:11px 12px;border:1px solid #d7dee7;border-radius:8px;font-size:15px;font-family:inherit;background:#fff;color:#1c2430">
+                  <option>עברית</option><option>יידיש</option><option>אנגלית</option><option>רוסית</option><option>צרפתית</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="margin-top:22px">
+              <label style="display:block;font-size:14px;font-weight:500;margin-bottom:8px">סוג שירות</label>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                <sc-for list="{{ services }}" as="s" hint-placeholder-count="3">
+                  <button onClick="{{ s.pick }}" style="cursor:pointer;padding:14px 22px;border-radius:10px;font-size:15px;font-weight:600;text-align:right;border:1.5px solid {{ s.bd }};background:{{ s.bg }};color:{{ s.fg }}">
+                    <div>{{ s.label }}</div>
+                    <div style="font-size:12px;font-weight:400;opacity:.75;margin-top:3px">{{ s.hint }}</div>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="margin-top:24px;padding-top:20px;border-top:1px solid #eef2f6;display:flex;gap:12px;align-items:center">
+              <button onClick="{{ goActive }}" style="border:0;cursor:pointer;background:#2f6fb2;color:#fff;font-size:15px;font-weight:600;padding:13px 26px;border-radius:10px">פתח סשן והמשך</button>
+              <button onClick="{{ goQueue }}" style="cursor:pointer;background:#fff;border:1px solid #d7dee7;color:#1c2430;font-size:15px;padding:13px 22px;border-radius:10px">ביטול</button>
+              <div style="flex:1"></div>
+              <div style="font-size:12px;color:#5c6672">הטאבלט של הלקוח יעבור אוטומטית למסך בחירת שפה.</div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===================== OPERATOR: סטטוס פעיל ===================== -->
+      <sc-if value="{{ sActive }}">
+        <div style="background:#f4f7fa;border:1px solid #d7dee7;border-radius:12px;padding:28px">
+          <div style="display:flex;align-items:flex-start;gap:16px;margin-bottom:20px">
+            <div>
+              <h1 style="margin:0;font-size:28px;font-weight:700">סשן פעיל · תיק <span style="direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace">2026-0418</span></h1>
+              <div style="font-size:12px;color:#5c6672;margin-top:6px">מרים לוינגר · העברה · התחיל <span style="direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace">09:41:22</span></div>
+            </div>
+            <div style="flex:1"></div>
+            <span style="display:inline-flex;align-items:center;gap:8px;background:#e7f0f9;color:#2f6fb2;font-size:14px;font-weight:600;padding:9px 16px;border-radius:20px">
+              <span style="width:9px;height:9px;border-radius:50%;background:#2f6fb2;animation:noamPulse 1.6s infinite"></span>בתהליך
+            </span>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1.35fr .95fr;gap:18px;align-items:start">
+            <div style="display:flex;flex-direction:column;gap:18px">
+              <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;padding:24px">
+                <div style="display:flex;align-items:baseline;gap:12px">
+                  <div style="font-size:20px;font-weight:600">העתקה ואימות</div>
+                  <div style="flex:1"></div>
+                  <div style="font-size:34px;font-weight:700;color:#2f6fb2">{{ pct }}%</div>
+                </div>
+                <div style="height:22px;border-radius:11px;background:#eef2f6;overflow:hidden;margin:14px 0 10px">
+                  <div style="height:100%;width:{{ pctW }};border-radius:11px;background:#2f6fb2;background-image:linear-gradient(115deg,rgba(255,255,255,.22) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.22) 50%,rgba(255,255,255,.22) 75%,transparent 75%);background-size:32px 32px;animation:noamStripe 1.1s linear infinite"></div>
+                </div>
+                <div style="display:flex;gap:24px;font-size:15px;flex-wrap:wrap">
+                  <div>אומתו <strong>{{ verified }}</strong> מתוך <strong>2,974</strong> קבצים</div>
+                  <div style="color:#5c6672">חלף <span style="direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace">00:07:38</span> · נותר משוער <span style="direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace">00:04:10</span></div>
+                </div>
+                <div style="margin-top:16px;padding:12px 14px;background:#f4f7fa;border-radius:8px;font-size:13px;color:#5c6672;line-height:1.6">
+                  כל קובץ מקבל טביעת <span style="direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace">SHA-256</span> ומושווה מול העותק ביעד. תוכן הקבצים אינו מוצג בקונסולה זו.
+                </div>
+              </div>
+
+              <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;padding:24px">
+                <div style="font-size:20px;font-weight:600;margin-bottom:4px">פירוט לפי קטגוריה</div>
+                <div style="font-size:12px;color:#5c6672;margin-bottom:16px">ספירות ונפחים בלבד — בלי שמות קבצים ובלי תצוגה מקדימה.</div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px">
+                  <sc-for list="{{ cats }}" as="c" hint-placeholder-count="4">
+                    <div style="border:1px solid #d7dee7;border-radius:9px;padding:14px">
+                      <div style="font-size:14px;color:#5c6672">{{ c.label }}</div>
+                      <div style="font-size:24px;font-weight:700;margin:4px 0 2px">{{ c.count }}</div>
+                      <div style="font-size:12px;color:#5c6672"><span style="direction:ltr;unicode-bidi:isolate">{{ c.size }}</span> · אומתו {{ c.ok }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;padding:24px">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+                  <div style="font-size:20px;font-weight:600">שגיאות</div>
+                  <span style="font-size:13px;font-weight:600;color:#d98a2b;background:#fbf1e3;padding:4px 10px;border-radius:20px">1 דילוג</span>
+                  <div style="flex:1"></div>
+                  <button onClick="{{ goDiag }}" style="cursor:pointer;background:#fff;border:1px solid #d7dee7;border-radius:8px;padding:8px 14px;font-size:14px;color:#1c2430">פתח אבחון</button>
+                </div>
+                <div style="display:flex;gap:12px;padding:14px;border:1px solid #f0dfc6;background:#fdf8f1;border-radius:9px">
+                  <div style="width:6px;border-radius:3px;background:#d98a2b"></div>
+                  <div>
+                    <div style="font-size:15px;font-weight:500">קובץ אחד לא נקרא מהמכשיר</div>
+                    <div style="font-size:13px;color:#5c6672;margin-top:4px;line-height:1.6">הקובץ דולג ונרשם במניפסט. סוג: וידאו. אין צורך בפעולה — ניתן לנסות שוב בסוף הסשן.</div>
+                    <div style="font-size:12px;color:#5c6672;margin-top:6px;direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace">ERR_READ_TIMEOUT · 09:46:02 · idx 1842</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:18px">
+              <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;padding:20px">
+                <div style="font-size:14px;color:#5c6672;margin-bottom:12px">מכשיר מחובר</div>
+                <div style="font-size:19px;font-weight:600">טלפון Android</div>
+                <div style="font-size:13px;color:#5c6672;margin-top:6px;direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace;line-height:1.7">SM-A546B · MTP<br>serial 9F2C-A81D-4477</div>
+                <div style="height:1px;background:#eef2f6;margin:16px 0"></div>
+                <div style="display:flex;justify-content:space-between;font-size:15px;margin-bottom:8px"><span style="color:#5c6672">סה״כ קבצים</span><strong>2,974</strong></div>
+                <div style="display:flex;justify-content:space-between;font-size:15px;margin-bottom:8px"><span style="color:#5c6672">נפח</span><strong style="direction:ltr;unicode-bidi:isolate">41.6 GB</strong></div>
+                <div style="display:flex;justify-content:space-between;font-size:15px"><span style="color:#5c6672">יעד</span><strong>דיסק SSD 1TB</strong></div>
+                <div style="margin-top:14px;padding:10px 12px;background:#eaf4ee;color:#2e8b57;border-radius:8px;font-size:13px;font-weight:500">מקום פנוי ביעד: <span style="direction:ltr;unicode-bidi:isolate">812 GB</span> ✓</div>
+              </div>
+
+              <div style="background:#0d1420;border-radius:10px;padding:18px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+                  <div style="font-size:13px;color:#8b98a8;letter-spacing:.06em">יומן פעולות</div>
+                  <div style="flex:1"></div>
+                  <div style="width:8px;height:8px;border-radius:50%;background:#9fd6a8;animation:noamPulse 1.6s infinite"></div>
+                </div>
+                <div style="direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace;font-size:12px;line-height:1.85;color:#9fd6a8">
+                  <sc-for list="{{ logLines }}" as="l" hint-placeholder-count="8">
+                    <div>{{ l }}</div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <button onClick="{{ goFinish }}" style="border:0;cursor:pointer;background:#1f3a5f;color:#fff;font-size:15px;font-weight:600;padding:15px;border-radius:10px">סיים סשן ועבור לסיכום</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===================== OPERATOR: סיום סשן ===================== -->
+      <sc-if value="{{ sFinish }}">
+        <div style="background:#f4f7fa;border:1px solid #d7dee7;border-radius:12px;padding:28px">
+          <h1 style="margin:0 0 6px;font-size:28px;font-weight:700">סיום סשן</h1>
+          <div style="font-size:12px;color:#5c6672;margin-bottom:22px">תיק <span style="direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace">2026-0418</span> · מרים לוינגר</div>
+
+          <div style="display:flex;gap:14px;align-items:center;background:#eaf4ee;border:1px solid #cfe4d7;border-radius:10px;padding:20px 22px;margin-bottom:18px">
+            <div style="width:44px;height:44px;border-radius:50%;background:#2e8b57;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px">✓</div>
+            <div>
+              <div style="font-size:20px;font-weight:600;color:#1c2430">העותק נכתב ואומת</div>
+              <div style="font-size:14px;color:#4d6a58;margin-top:3px">2,973 מתוך 2,974 קבצים אומתו · 1 קובץ דולג ונרשם</div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1.2fr .8fr;gap:18px;align-items:start">
+            <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;padding:24px">
+              <div style="font-size:20px;font-weight:600;margin-bottom:16px">סיכום מספרי</div>
+              <sc-for list="{{ summary }}" as="s" hint-placeholder-count="6">
+                <div style="display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid #eef2f6;font-size:15px">
+                  <span style="color:#5c6672">{{ s.k }}</span><strong style="direction:ltr;unicode-bidi:isolate">{{ s.v }}</strong>
+                </div>
+              </sc-for>
+              <div style="margin-top:16px;font-size:12px;color:#5c6672;line-height:1.7">
+                מניפסט: <span style="direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace">manifest-2026-0418.json</span><br>
+                טביעת מניפסט: <span style="direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace">a3f9 71c2 8de4 5b07 … 4471</span>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;padding:22px">
+                <div style="font-size:18px;font-weight:600;margin-bottom:6px">דוח חתום</div>
+                <div style="font-size:13px;color:#5c6672;line-height:1.6;margin-bottom:16px">דוח PDF הכולל את פרטי הסשן, הספירות, תוצאות האימות והחתימה הדיגיטלית של העמדה.</div>
+                <button style="border:0;cursor:pointer;width:100%;background:#2f6fb2;color:#fff;font-size:15px;font-weight:600;padding:14px;border-radius:10px">הפק דוח חתום</button>
+                <button style="cursor:pointer;width:100%;margin-top:10px;background:#fff;border:1px solid #d7dee7;font-size:15px;padding:13px;border-radius:10px;color:#1c2430">הדפס עותק ללקוח</button>
+              </div>
+              <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;padding:22px">
+                <div style="font-size:14px;font-weight:600;margin-bottom:10px">לפני שהלקוח מתנתק</div>
+                <div style="font-size:14px;color:#5c6672;line-height:1.9">
+                  <div>✓ העותק אומת מול המקור</div>
+                  <div>✓ המכשיר לא נמחק ולא שונה</div>
+                  <div>✓ מדיית המקור מוכנה לניתוק</div>
+                </div>
+              </div>
+              <button onClick="{{ goQueue }}" style="border:0;cursor:pointer;background:#1f3a5f;color:#fff;font-size:15px;font-weight:600;padding:14px;border-radius:10px">חזרה לתור</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===================== OPERATOR: היסטוריה ===================== -->
+      <sc-if value="{{ sHistory }}">
+        <div style="background:#f4f7fa;border:1px solid #d7dee7;border-radius:12px;padding:28px">
+          <h1 style="margin:0 0 6px;font-size:28px;font-weight:700">היסטוריית סשנים</h1>
+          <div style="font-size:12px;color:#5c6672;margin-bottom:20px">נשמרות רשומות מטא בלבד: מספרים, סטטוסים והפניה לדוח. אין שמירת תוכן.</div>
+
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+            <input placeholder="חיפוש לפי תיק, שם או טלפון" style="flex:1;min-width:240px;padding:12px 14px;border:1px solid #d7dee7;border-radius:9px;font-size:15px;font-family:inherit;background:#fff;color:#1c2430">
+            <select style="padding:12px 14px;border:1px solid #d7dee7;border-radius:9px;font-size:15px;font-family:inherit;background:#fff;color:#1c2430"><option>כל השירותים</option><option>גיבוי</option><option>העברה</option><option>שחזור</option></select>
+            <select style="padding:12px 14px;border:1px solid #d7dee7;border-radius:9px;font-size:15px;font-family:inherit;background:#fff;color:#1c2430"><option>30 הימים האחרונים</option><option>היום</option><option>טווח מותאם</option></select>
+          </div>
+
+          <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;overflow:hidden">
+            <div style="display:grid;grid-template-columns:110px 1.2fr .8fr .8fr .7fr 1fr 130px;gap:10px;padding:12px 18px;background:#f4f7fa;border-bottom:1px solid #d7dee7;font-size:12px;color:#5c6672;font-weight:500">
+              <div>תאריך</div><div>לקוח</div><div>תיק</div><div>שירות</div><div>קבצים</div><div>אימות</div><div></div>
+            </div>
+            <sc-for list="{{ history }}" as="h" hint-placeholder-count="6">
+              <div style="display:grid;grid-template-columns:110px 1.2fr .8fr .8fr .7fr 1fr 130px;gap:10px;padding:14px 18px;border-bottom:1px solid #eef2f6;font-size:15px;align-items:center">
+                <div style="direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace;font-size:13px;color:#5c6672">{{ h.date }}</div>
+                <div style="font-weight:500">{{ h.name }}</div>
+                <div style="direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace;font-size:13px;color:#5c6672">{{ h.file }}</div>
+                <div>{{ h.service }}</div>
+                <div style="direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace;font-size:13px">{{ h.files }}</div>
+                <div style="font-size:14px;font-weight:600;color:{{ h.fg }}">{{ h.verify }}</div>
+                <div><button style="cursor:pointer;background:#fff;border:1px solid #d7dee7;border-radius:8px;padding:7px 12px;font-size:13px;color:#2f6fb2">הדפס דוח מחדש</button></div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===================== OPERATOR: אבחון ===================== -->
+      <sc-if value="{{ sDiag }}">
+        <div style="background:#f4f7fa;border:1px solid #d7dee7;border-radius:12px;padding:28px">
+          <h1 style="margin:0 0 6px;font-size:28px;font-weight:700">לוח אבחון</h1>
+          <div style="font-size:12px;color:#5c6672;margin-bottom:22px">בדיקות בשפה פשוטה. אם משהו לא בסדר — כתוב מה לעשות.</div>
+
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px">
+            <sc-for list="{{ checks }}" as="c" hint-placeholder-count="4">
+              <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;padding:20px;border-top:4px solid {{ c.color }}">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div style="width:26px;height:26px;border-radius:50%;background:{{ c.color }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px">{{ c.icon }}</div>
+                  <div style="font-size:17px;font-weight:600">{{ c.title }}</div>
+                </div>
+                <div style="font-size:15px;margin-top:12px;line-height:1.6">{{ c.state }}</div>
+                <div style="font-size:13px;color:#5c6672;margin-top:8px;line-height:1.6">{{ c.action }}</div>
+              </div>
+            </sc-for>
+          </div>
+
+          <div style="background:#0d1420;border-radius:10px;padding:20px;margin-top:18px">
+            <div style="font-size:13px;color:#8b98a8;margin-bottom:12px;letter-spacing:.06em">שגיאות אחרונות (24 שעות)</div>
+            <div style="direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace;font-size:12px;line-height:1.9;color:#9fd6a8">
+              <div>09:46:02  WARN  ERR_READ_TIMEOUT  session 2026-0418  idx 1842  skipped</div>
+              <div>08:12:44  INFO  target mounted  /Volumes/NOAM-SSD  free 812GB</div>
+              <div>07:58:19  WARN  device reconnect  SM-A546B  recovered in 2.1s</div>
+              <div>07:40:03  INFO  signing key loaded  fp 4C:19:AA:71</div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===================== OPERATOR: הגדרות ===================== -->
+      <sc-if value="{{ sSettings }}">
+        <div style="background:#f4f7fa;border:1px solid #d7dee7;border-radius:12px;padding:28px">
+          <sc-if value="{{ locked }}">
+            <div style="max-width:420px;margin:60px auto;background:#fff;border:1px solid #d7dee7;border-radius:12px;padding:32px;text-align:center">
+              <div style="width:48px;height:48px;margin:0 auto 16px;border-radius:12px;background:#f4f7fa;border:1px solid #d7dee7;display:flex;align-items:center;justify-content:center">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1f3a5f" stroke-width="1.6"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg>
+              </div>
+              <div style="font-size:20px;font-weight:600">אזור מוגן</div>
+              <div style="font-size:14px;color:#5c6672;margin:8px 0 20px;line-height:1.6">ההגדרות פתוחות למפעיל מורשה בלבד.</div>
+              <input type="password" value="0000" style="width:100%;padding:13px;border:1px solid #d7dee7;border-radius:9px;font-size:18px;text-align:center;letter-spacing:.4em;direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace;color:#1c2430">
+              <button onClick="{{ unlock }}" style="border:0;cursor:pointer;width:100%;margin-top:14px;background:#2f6fb2;color:#fff;font-size:15px;font-weight:600;padding:14px;border-radius:10px">כניסה</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ unlocked }}">
+            <div>
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:22px">
+                <h1 style="margin:0;font-size:28px;font-weight:700">הגדרות</h1>
+                <span style="font-size:12px;color:#2e8b57;background:#eaf4ee;padding:5px 11px;border-radius:20px;font-weight:600">פתוח · מפעיל מורשה</span>
+                <div style="flex:1"></div>
+                <button onClick="{{ lock }}" style="cursor:pointer;background:#fff;border:1px solid #d7dee7;border-radius:9px;padding:10px 16px;font-size:14px;color:#1c2430">נעל שוב</button>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px">
+                <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;padding:22px">
+                  <div style="font-size:18px;font-weight:600;margin-bottom:14px">מיתוג ולוגו</div>
+                  <div style="display:flex;gap:14px;align-items:center;margin-bottom:14px">
+                    <div style="width:64px;height:64px;border-radius:12px;background:#1f3a5f;display:flex;align-items:center;justify-content:center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8l7.5 3v5.6c0 4.6-3.1 8.2-7.5 9.8-4.4-1.6-7.5-5.2-7.5-9.8V5.8z" stroke="#ffffff" stroke-width="1.7"></path><path d="M8.6 12.2l2.4 2.4 4.6-4.8" stroke="#9fd6a8" stroke-width="1.9"></path></svg></div>
+                    <button style="cursor:pointer;background:#fff;border:1px solid #d7dee7;border-radius:8px;padding:10px 14px;font-size:14px;color:#1c2430">העלה קובץ</button>
+                  </div>
+                  <label style="display:block;font-size:14px;font-weight:500;margin-bottom:6px">שם מוצג בעמדה</label>
+                  <input value="נועם הלר" style="width:100%;padding:11px 12px;border:1px solid #d7dee7;border-radius:8px;font-size:15px;font-family:inherit;color:#1c2430">
+                  <div style="font-size:12px;color:#5c6672;margin-top:6px">מרכז אורנים · כנפי נשרים 68, ירושלים · <span style="direction:ltr;unicode-bidi:isolate">052-898-8890</span></div>
+                </div>
+
+                <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;padding:22px">
+                  <div style="font-size:18px;font-weight:600;margin-bottom:14px">יעדי ברירת מחדל</div>
+                  <label style="display:block;font-size:14px;font-weight:500;margin-bottom:6px">יעד ראשי</label>
+                  <select style="width:100%;padding:11px 12px;border:1px solid #d7dee7;border-radius:8px;font-size:15px;font-family:inherit;background:#fff;margin-bottom:14px;color:#1c2430"><option>דיסק SSD 1TB (NOAM-SSD)</option><option>כרטיס SD חדש</option></select>
+                  <label style="display:block;font-size:14px;font-weight:500;margin-bottom:6px">מבנה תיקיות</label>
+                  <input value="/{case}/{date}/{category}" style="width:100%;padding:11px 12px;border:1px solid #d7dee7;border-radius:8px;font-size:14px;direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace;color:#1c2430">
+                </div>
+
+                <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;padding:22px">
+                  <div style="font-size:18px;font-weight:600;margin-bottom:14px">שפות זמינות בטאבלט</div>
+                  <sc-for list="{{ langToggles }}" as="l" hint-placeholder-count="5">
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eef2f6">
+                      <span style="font-size:15px">{{ l.label }}</span>
+                      <div style="width:44px;height:24px;border-radius:14px;background:{{ l.bg }};position:relative"><div style="position:absolute;top:3px;{{ l.side }}:3px;width:18px;height:18px;border-radius:50%;background:#fff"></div></div>
+                    </div>
+                  </sc-for>
+                </div>
+
+                <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;padding:22px">
+                  <div style="font-size:18px;font-weight:600;margin-bottom:6px">מפתח חתימה</div>
+                  <div style="font-size:12px;color:#5c6672;margin-bottom:14px">תצוגה בלבד. החלפת מפתח מחייבת אישור מנהל.</div>
+                  <div style="background:#f4f7fa;border:1px solid #d7dee7;border-radius:8px;padding:14px;font-size:13px;line-height:1.9;direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace;color:#1c2430">
+                    <div>alg  ECDSA P-256</div>
+                    <div>fp   4C:19:AA:71:2E:08:BD:53</div>
+                    <div>exp  2028-03-14</div>
+                  </div>
+                  <div style="margin-top:12px;font-size:13px;color:#2e8b57;font-weight:500">✓ מפתח תקף ונטען</div>
+                </div>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isNoam }}">
+        <div style="background:#f4f7fa;border:1px solid #d7dee7;border-radius:12px;padding:28px">
+          <div style="display:flex;align-items:flex-end;gap:14px;margin-bottom:20px;flex-wrap:wrap">
+            <div>
+              <h1 style="margin:0;font-size:28px;font-weight:700">מסך נועם</h1>
+              <div style="font-size:12px;color:#5c6672;margin-top:6px">טרמינל המפעיל · המסך פונה ללקוח ובטוח לצפייה — אין בו תוכן, תמונות או שמות תיקיות.</div>
+            </div>
+            <div style="flex:1"></div>
+            <span style="display:inline-flex;align-items:center;gap:8px;background:#eaf4ee;color:#2e8b57;font-size:13px;font-weight:600;padding:8px 14px;border-radius:20px">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2e8b57" stroke-width="1.8"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"></path></svg>מצב פרטיות: קפדני
+            </span>
+            <button onClick="{{ resetNoam }}" style="cursor:pointer;background:#fff;border:1px solid #d7dee7;border-radius:9px;padding:9px 16px;font-size:14px;color:#1c2430">איפוס הדגמה</button>
+          </div>
+
+          <div style="display:grid;grid-template-columns:minmax(0,1.55fr) minmax(0,1fr);gap:18px;align-items:start">
+            <div>
+              <div onClick="{{ focusTerm }}" style="background:#0d1420;border-radius:12px;overflow:hidden;box-shadow:0 6px 20px rgba(13,20,32,.22);cursor:text">
+                <div dir="ltr" style="display:flex;align-items:center;gap:10px;padding:10px 16px;background:#131c2b;border-bottom:1px solid #1f2a3b;font-family:ui-monospace,Consolas,monospace;font-size:12px;color:#7b8899">
+                  <span style="width:8px;height:8px;border-radius:50%;background:#9fd6a8;animation:noamPulse 1.8s infinite"></span>
+                  <span>noam@st-02 · operator shell</span>
+                  <span style="flex:1"></span>
+                  <span>privacy STRICT · content access: none</span>
+                </div>
+                <div ref="{{ termRef }}" dir="ltr" style="height:470px;overflow-y:auto;padding:16px 18px;font-family:ui-monospace,Consolas,monospace;font-size:13px;line-height:1.75">
+                  <sc-for list="{{ tLines }}" as="l" hint-placeholder-count="3">
+                    <div style="color:{{ l.color }};white-space:pre-wrap;word-break:break-word">{{ l.text }}</div>
+                  </sc-for>
+                  <div style="display:flex;align-items:center">
+                    <span style="color:#8fc3f0;white-space:pre">noam@st-02:~$ </span>
+                    <input ref="{{ inputRef }}" value="{{ tInput }}" onChange="{{ onInput }}" onKeyDown="{{ onKey }}" placeholder="{{ inputPh }}" style="flex:1;min-width:0;background:transparent;border:0;outline:none;color:#e6edf5;font-family:ui-monospace,Consolas,monospace;font-size:13px;caret-color:#9fd6a8;padding:0">
+                  </div>
+                </div>
+                <div dir="ltr" style="display:flex;flex-wrap:wrap;gap:6px 18px;padding:9px 16px;background:#16202f;font-family:ui-monospace,Consolas,monospace;font-size:12px">
+                  <sc-for list="{{ statusParts }}" as="p" hint-placeholder-count="5">
+                    <span style="color:{{ p.color }}">{{ p.text }}</span>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center">
+                <button onClick="{{ runNext }}" style="border:0;cursor:pointer;background:#2f6fb2;color:#fff;font-size:15px;font-weight:600;padding:12px 20px;border-radius:10px">{{ nextLabel }}</button>
+                <button onClick="{{ tryBlocked }}" style="cursor:pointer;background:#fff;border:1px solid #d7dee7;color:#c0392b;font-size:14px;font-weight:500;padding:12px 16px;border-radius:10px">הדגמת חסימה: ניסיון לפתוח תיקייה</button>
+                <div style="flex:1"></div>
+                <div style="font-size:12px;color:#5c6672">Enter להרצה · Tab לצעד הבא · ↑ היסטוריה · help</div>
+              </div>
+            </div>
+
+            <div style="display:flex;flex-direction:column;gap:16px">
+              <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;padding:20px">
+                <div style="font-size:12px;color:#5c6672">תרגום לעולם הוויזואלי</div>
+                <div style="font-size:12px;color:#5c6672;margin:8px 0 6px;direction:ltr;unicode-bidi:isolate;font-family:ui-monospace,Consolas,monospace;text-align:right;word-break:break-word">{{ curCmd }}</div>
+                <div style="font-size:18px;font-weight:600;line-height:1.55">{{ curHe }}</div>
+              </div>
+
+              <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;padding:20px">
+                <div style="font-size:12px;color:#5c6672">מה מוצג עכשיו בטאבלט של הלקוח</div>
+                <div style="font-size:12px;color:#5c6672;margin-top:2px;margin-bottom:12px">סכמה בלבד — התוכן עצמו גלוי ללקוח בלבד.</div>
+                <div style="border:8px solid #1c2430;border-radius:16px;background:#f4f7fa;padding:14px;height:210px;display:flex;flex-direction:column;gap:10px">
+                  <div>
+                    <div style="font-size:15px;font-weight:600">{{ mTitle }}</div>
+                    <div style="font-size:12px;color:#5c6672;margin-top:2px">{{ mSub }}</div>
+                  </div>
+                  <sc-if value="{{ mIsButtons }}">
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+                      <sc-for list="{{ miniLangs }}" as="b" hint-placeholder-count="5">
+                        <div style="background:#fff;border:1px solid #d7dee7;border-radius:6px;padding:7px 4px;text-align:center;font-size:11px;color:#1c2430">{{ b }}</div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ mIsGrid }}">
+                    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+                      <sc-for list="{{ miniGrid }}" as="g" hint-placeholder-count="8">
+                        <div style="height:40px;border-radius:5px;border:1.5px solid {{ g.bd }};background:repeating-linear-gradient(45deg,#e4e9ef 0 6px,#eef2f6 6px 12px);display:flex;align-items:center;justify-content:center;font-size:10px;color:#5c6672">מוסתר</div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ mIsBar }}">
+                    <div style="margin-top:14px">
+                      <div style="height:14px;border-radius:7px;background:#e4eaf1;overflow:hidden">
+                        <div style="height:100%;width:{{ mPctW }};background:#2f6fb2;border-radius:7px"></div>
+                      </div>
+                      <div style="font-size:20px;font-weight:700;color:#1f3a5f;margin-top:8px;text-align:center">{{ mPct }}%</div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ mIsCheck }}">
+                    <div style="flex:1;display:flex;align-items:center;justify-content:center">
+                      <div style="width:56px;height:56px;border-radius:50%;background:#2e8b57;color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px">✓</div>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+
+              <div style="background:#fff;border:1px solid #d7dee7;border-radius:10px;padding:20px">
+                <div style="font-size:12px;color:#5c6672;margin-bottom:10px">יומן תרגום</div>
+                <sc-if value="{{ feedEmpty }}">
+                  <div style="font-size:14px;color:#5c6672">עדיין לא הורצו פקודות.</div>
+                </sc-if>
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <sc-for list="{{ feed }}" as="f" hint-placeholder-count="0">
+                    <div style="padding-bottom:10px;border-bottom:1px solid #eef2f6">
+                      <div style="font-size:11px;color:{{ f.tone }};direction:ltr;unicode-bidi:isolate;font-family:ui-monospace,Consolas,monospace;text-align:right;word-break:break-word">{{ f.cmd }}</div>
+                      <div style="font-size:14px;margin-top:3px;line-height:1.55">{{ f.he }}</div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- =========================================================== -->
+      <!-- =====================  CLIENT TABLET  ===================== -->
+      <!-- =========================================================== -->
+      <sc-if value="{{ isClient }}">
+        <div style="display:flex;justify-content:center">
+          <div style="width:100%;max-width:1080px;border:14px solid #1c2430;border-radius:26px;background:#f4f7fa;box-shadow:0 12px 34px rgba(28,36,48,.22);overflow:hidden;min-height:720px;display:flex;flex-direction:column">
+
+            <div style="display:flex;align-items:center;gap:12px;padding:14px 24px;background:#fff;border-bottom:1px solid #d7dee7">
+              <div style="width:30px;height:30px;border-radius:8px;background:#1f3a5f;display:flex;align-items:center;justify-content:center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.8l7.5 3v5.6c0 4.6-3.1 8.2-7.5 9.8-4.4-1.6-7.5-5.2-7.5-9.8V5.8z" stroke="#ffffff" stroke-width="1.7"></path><path d="M8.6 12.2l2.4 2.4 4.6-4.8" stroke="#9fd6a8" stroke-width="1.9"></path></svg></div>
+              <div style="font-size:15px;font-weight:700;color:#1f3a5f">נועם הלר</div>
+              <div style="font-size:12px;color:#5c6672">גיבוי · העברה · שחזור נתונים</div>
+              <div style="flex:1"></div>
+              <div style="font-size:13px;color:#5c6672">{{ clientStep }}</div>
+            </div>
+
+            <div style="flex:1;padding:36px 40px">
+
+              <sc-if value="{{ cLang }}">
+                <div style="text-align:center;padding-top:20px">
+                  <h1 style="margin:0;font-size:34px;font-weight:700">בחר שפה</h1>
+                  <div style="font-size:19px;color:#5c6672;margin:14px 0 4px">Choose your language</div>
+                  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px;max-width:800px;margin:34px auto 0">
+                    <sc-for list="{{ languages }}" as="l" hint-placeholder-count="5">
+                      <button onClick="{{ l.pick }}" style="cursor:pointer;background:#fff;border:2px solid {{ l.bd }};border-radius:14px;padding:26px 18px;font-size:24px;font-weight:600;color:#1c2430;min-height:104px;box-shadow:0 1px 3px rgba(28,36,48,.07)">{{ l.label }}</button>
+                    </sc-for>
+                  </div>
+                  <div style="margin-top:38px;display:inline-flex;align-items:center;gap:10px;background:#fff;border:1px solid #d7dee7;border-radius:12px;padding:18px 26px;font-size:19px">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2e8b57" stroke-width="1.6"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"></path></svg>
+                    רק אתה רואה את הנתונים שלך.
+                  </div>
+                  <div style="display:flex;justify-content:center;margin-top:16px">
+                    <div style="display:flex;align-items:center;gap:14px;text-align:right">
+                      <img src="assets/noam-heller.png" alt="נועם הלר" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid #fff;box-shadow:0 1px 4px rgba(28,36,48,.18)">
+                      <div>
+                        <div style="font-size:17px;font-weight:600">נועם הלר ילווה אותך</div>
+                        <div style="font-size:14px;color:#5c6672">מרכז אורנים · כנפי נשרים 68, ירושלים</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ cConnect }}">
+                <div>
+                  <h1 style="margin:0;font-size:32px;font-weight:700">חיבור המכשיר</h1>
+                  <div style="font-size:18px;color:#5c6672;margin-top:8px">שלושה שלבים. אין מה למהר — נועם לידך.</div>
+                  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:30px">
+                    <sc-for list="{{ steps }}" as="s" hint-placeholder-count="3">
+                      <div style="background:#fff;border:1px solid #d7dee7;border-radius:14px;padding:24px;text-align:center">
+                        <div style="width:30px;height:30px;border-radius:50%;background:#e7f0f9;color:#2f6fb2;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px">{{ s.n }}</div>
+                        <div style="height:96px;display:flex;align-items:center;justify-content:center">{{ s.art }}</div>
+                        <div style="font-size:20px;font-weight:600;margin-top:12px">{{ s.title }}</div>
+                        <div style="font-size:15px;color:#5c6672;margin-top:8px;line-height:1.6">{{ s.body }}</div>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:14px;margin-top:28px;background:#e7f0f9;border-radius:14px;padding:22px 26px">
+                    <div style="width:24px;height:24px;border:3px solid #bcd4ea;border-top-color:#2f6fb2;border-radius:50%;animation:noamSpin 1s linear infinite"></div>
+                    <div style="font-size:20px;font-weight:600;color:#1f3a5f">מחפש מכשיר…</div>
+                    <div style="flex:1"></div>
+                    <button onClick="{{ goCSrc }}" style="border:0;cursor:pointer;background:#2f6fb2;color:#fff;font-size:18px;font-weight:600;padding:16px 26px;border-radius:12px">המכשיר זוהה — המשך</button>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ cSrc }}">
+                <div>
+                  <h1 style="margin:0;font-size:32px;font-weight:700">מאיפה, ולאן</h1>
+                  <div style="font-size:18px;color:#5c6672;margin-top:8px">בחר את המכשיר שממנו מעתיקים, ואת המדיה שאליה נשמור.</div>
+
+                  <div style="font-size:15px;color:#5c6672;margin:26px 0 10px;font-weight:500">מקור</div>
+                  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px">
+                    <sc-for list="{{ sources }}" as="d" hint-placeholder-count="3">
+                      <button onClick="{{ d.pick }}" style="text-align:right;cursor:pointer;background:#fff;border:2px solid {{ d.bd }};border-radius:14px;padding:20px">
+                        <div style="font-size:21px;font-weight:600;color:#1c2430">{{ d.label }}</div>
+                        <div style="font-size:15px;color:#5c6672;margin-top:6px">{{ d.metaCount }}<span style="direction:ltr;unicode-bidi:isolate">{{ d.metaSize }}</span></div>
+                        <div style="font-size:13px;color:#5c6672;margin-top:8px;direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace">{{ d.id }}</div>
+                      </button>
+                    </sc-for>
+                  </div>
+
+                  <div style="font-size:15px;color:#5c6672;margin:26px 0 10px;font-weight:500">יעד</div>
+                  <div style="background:#fff;border:2px solid #2f6fb2;border-radius:14px;padding:22px">
+                    <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+                      <div style="font-size:21px;font-weight:600">דיסק SSD חדש · <span style="direction:ltr;unicode-bidi:isolate">1 TB</span></div>
+                      <div style="flex:1"></div>
+                      <div style="font-size:16px;color:#2e8b57;font-weight:600">מקום פנוי: <span style="direction:ltr;unicode-bidi:isolate">812 GB</span> · מספיק בהרבה ✓</div>
+                    </div>
+                    <div style="height:14px;border-radius:7px;background:#eef2f6;overflow:hidden;margin-top:14px">
+                      <div style="height:100%;width:19%;background:#2f6fb2;border-radius:7px"></div>
+                    </div>
+                    <div style="font-size:14px;color:#5c6672;margin-top:8px">הנתונים שלך: <span style="direction:ltr;unicode-bidi:isolate">41.6 GB</span> מתוך <span style="direction:ltr;unicode-bidi:isolate">1,024 GB</span></div>
+                  </div>
+
+                  <div style="display:flex;justify-content:flex-end;margin-top:28px">
+                    <button onClick="{{ goCBrowse }}" style="border:0;cursor:pointer;background:#2f6fb2;color:#fff;font-size:19px;font-weight:600;padding:18px 32px;border-radius:12px">המשך לבחירת קבצים</button>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ cBrowse }}">
+                <div>
+                  <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap">
+                    <div>
+                      <h1 style="margin:0;font-size:32px;font-weight:700">מה להעביר</h1>
+                      <div style="font-size:17px;color:#5c6672;margin-top:6px">רק אתה רואה את התוכן הזה.</div>
+                    </div>
+                    <div style="flex:1"></div>
+                    <button onClick="{{ toggleAll }}" style="cursor:pointer;background:#fff;border:1.5px solid #2f6fb2;color:#2f6fb2;font-size:17px;font-weight:600;padding:14px 22px;border-radius:12px">{{ allLabel }}</button>
+                  </div>
+
+                  <div style="display:flex;gap:10px;flex-wrap:wrap;margin:22px 0 14px;align-items:center">
+                    <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="4">
+                      <button onClick="{{ t.pick }}" style="cursor:pointer;border:1px solid {{ t.bd }};background:{{ t.bg }};color:{{ t.fg }};font-size:17px;font-weight:600;padding:12px 20px;border-radius:22px">{{ t.label }}</button>
+                    </sc-for>
+                    <div style="flex:1"></div>
+                    <div style="display:flex;align-items:center;gap:8px;font-size:15px;color:#5c6672">
+                      <span>מתאריך</span>
+                      <input value="2019-01-01" style="padding:10px;border:1px solid #d7dee7;border-radius:8px;font-size:14px;direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace;background:#fff;color:#1c2430">
+                      <span>עד</span>
+                      <input value="2026-09-08" style="padding:10px;border:1px solid #d7dee7;border-radius:8px;font-size:14px;direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace;background:#fff;color:#1c2430">
+                    </div>
+                  </div>
+
+                  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px">
+                    <sc-for list="{{ tiles }}" as="t" hint-placeholder-count="12">
+                      <div onClick="{{ t.toggle }}" style="cursor:pointer;background:#fff;border:2px solid {{ t.bd }};border-radius:12px;overflow:hidden">
+                        <div style="height:104px;background:{{ t.tint }};position:relative;display:flex;align-items:flex-end;padding:8px">
+                          <div style="position:absolute;top:8px;left:8px;width:24px;height:24px;border-radius:50%;background:{{ t.dotBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px">{{ t.dot }}</div>
+                          <div style="font-size:11px;color:rgba(28,36,48,.55);background:rgba(255,255,255,.7);border-radius:5px;padding:2px 6px">{{ t.kind }}</div>
+                        </div>
+                        <div style="padding:10px 12px">
+                          <div style="font-size:15px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ t.name }}</div>
+                          <div style="font-size:12px;color:#5c6672;margin-top:3px">{{ t.metaCount }}<span style="direction:ltr;unicode-bidi:isolate">{{ t.metaSize }}</span></div>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+
+                  <div style="position:sticky;bottom:0;margin-top:22px;display:flex;align-items:center;gap:16px;background:#1f3a5f;color:#fff;border-radius:14px;padding:18px 24px">
+                    <div style="font-size:20px;font-weight:600">נבחרו: {{ selCount }} קבצים · <span style="direction:ltr;unicode-bidi:isolate">{{ selSize }}</span></div>
+                    <div style="flex:1"></div>
+                    <button onClick="{{ goCConsent }}" style="border:0;cursor:pointer;background:#2f6fb2;color:#fff;font-size:19px;font-weight:600;padding:16px 30px;border-radius:12px">המשך</button>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ cConsent }}">
+                <div style="max-width:760px;margin:0 auto">
+                  <h1 style="margin:0;font-size:32px;font-weight:700">אישור לפני התחלה</h1>
+                  <div style="font-size:17px;color:#5c6672;margin-top:8px">קרא, ואם הכל מובן — חתום כאן.</div>
+
+                  <div style="background:#fff;border:1px solid #d7dee7;border-radius:14px;padding:26px;margin-top:22px;font-size:17px;line-height:1.85">
+                    <div style="font-weight:600;margin-bottom:12px">מה יקרה עכשיו</div>
+                    <div>· 1,247 קבצים (<span style="direction:ltr;unicode-bidi:isolate">18.4 GB</span>) יועתקו מהטלפון שלך אל הדיסק שבחרת.</div>
+                    <div>· שום דבר לא יימחק ולא ישונה במכשיר המקור.</div>
+                    <div>· כל קובץ יאומת בהשוואת טביעה <span style="direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace">SHA-256</span>.</div>
+                    <div>· המפעיל רואה מספרים וסטטוס בלבד — לא את התוכן.</div>
+                    <div>· בסיום תקבל דוח חתום עם רשימת הקבצים והאימות.</div>
+                  </div>
+
+                  <div style="background:#fff;border:1px solid #d7dee7;border-radius:14px;padding:22px;margin-top:16px">
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+                      <div style="font-size:17px;font-weight:600">חתימה</div>
+                      <div style="font-size:14px;color:#5c6672">חתום באצבע בתוך המסגרת</div>
+                      <div style="flex:1"></div>
+                      <button onClick="{{ clearSig }}" style="cursor:pointer;background:#fff;border:1px solid #d7dee7;border-radius:8px;padding:9px 14px;font-size:14px;color:#1c2430">נקה</button>
+                    </div>
+                    <canvas ref="{{ sigRef }}" style="width:100%;height:170px;border:1.5px dashed #d7dee7;border-radius:10px;background:#fcfdfe;touch-action:none;display:block"></canvas>
+                    <div style="font-size:13px;color:#5c6672;margin-top:10px">{{ sigHint }}</div>
+                  </div>
+
+                  <button onClick="{{ goCProg }}" style="border:0;cursor:pointer;width:100%;margin-top:18px;background:#2e8b57;color:#fff;font-size:21px;font-weight:600;padding:20px;border-radius:14px">אני מאשר ומתחיל</button>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ cProg }}">
+                <div style="max-width:720px;margin:40px auto;text-align:center">
+                  <div style="width:66px;height:66px;margin:0 auto;border:5px solid #dce6f1;border-top-color:#2f6fb2;border-radius:50%;animation:noamSpin 1.4s linear infinite"></div>
+                  <h1 style="margin:26px 0 0;font-size:32px;font-weight:700">מעתיק ומאמת</h1>
+                  <div style="font-size:18px;color:#5c6672;margin-top:10px">אפשר לשבת בנחת. אל תנתק את המכשיר.</div>
+
+                  <div style="height:26px;border-radius:13px;background:#e4eaf1;overflow:hidden;margin:30px 0 14px">
+                    <div style="height:100%;width:{{ pctW }};border-radius:13px;background:#2f6fb2;background-image:linear-gradient(115deg,rgba(255,255,255,.25) 25%,transparent 25%,transparent 50%,rgba(255,255,255,.25) 50%,rgba(255,255,255,.25) 75%,transparent 75%);background-size:32px 32px;animation:noamStripe 1.1s linear infinite"></div>
+                  </div>
+                  <div style="font-size:26px;font-weight:700;color:#1f3a5f">{{ pct }}%</div>
+
+                  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:26px">
+                    <div style="background:#fff;border:1px solid #d7dee7;border-radius:12px;padding:18px">
+                      <div style="font-size:15px;color:#5c6672">נותרו קבצים</div>
+                      <div style="font-size:26px;font-weight:700;margin-top:4px">{{ remaining }}</div>
+                    </div>
+                    <div style="background:#fff;border:1px solid #d7dee7;border-radius:12px;padding:18px">
+                      <div style="font-size:15px;color:#5c6672">זמן משוער</div>
+                      <div style="font-size:26px;font-weight:700;margin-top:4px">4 דק׳</div>
+                    </div>
+                    <div style="background:#fff;border:1px solid #d7dee7;border-radius:12px;padding:18px">
+                      <div style="font-size:15px;color:#5c6672">אומתו</div>
+                      <div style="font-size:26px;font-weight:700;margin-top:4px;color:#2e8b57">{{ verifiedClient }}</div>
+                    </div>
+                  </div>
+
+                  <button onClick="{{ goCDone }}" style="cursor:pointer;margin-top:26px;background:#fff;border:1px solid #d7dee7;color:#5c6672;font-size:15px;padding:13px 22px;border-radius:10px">דלג לסיום (מוקאפ)</button>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{ cDone }}">
+                <div style="max-width:720px;margin:24px auto;text-align:center">
+                  <div style="width:88px;height:88px;margin:0 auto;border-radius:50%;background:#2e8b57;color:#fff;display:flex;align-items:center;justify-content:center;font-size:44px">✓</div>
+                  <h1 style="margin:22px 0 0;font-size:34px;font-weight:700">העותק נכתב ואומת</h1>
+                  <div style="font-size:19px;color:#5c6672;margin-top:12px;line-height:1.6">1,247 קבצים · <span style="direction:ltr;unicode-bidi:isolate">18.4 GB</span> · כל הקבצים אומתו בהצלחה.<br>שום דבר לא נמחק מהמכשיר שלך.</div>
+
+                  <div style="display:flex;flex-direction:column;gap:12px;margin-top:28px;text-align:right">
+                    <sc-for list="{{ finishToggles }}" as="t" hint-placeholder-count="2">
+                      <div onClick="{{ t.toggle }}" style="cursor:pointer;display:flex;align-items:center;gap:16px;background:#fff;border:1px solid #d7dee7;border-radius:14px;padding:20px 22px">
+                        <div>
+                          <div style="font-size:19px;font-weight:600">{{ t.label }}</div>
+                          <div style="font-size:15px;color:#5c6672;margin-top:4px">{{ t.hint }}</div>
+                        </div>
+                        <div style="flex:1"></div>
+                        <div style="width:56px;height:32px;border-radius:18px;background:{{ t.bg }};position:relative;flex:0 0 56px"><div style="position:absolute;top:4px;{{ t.side }}:4px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2)"></div></div>
+                      </div>
+                    </sc-for>
+                  </div>
+
+                  <div style="background:#fff;border:1px solid #d7dee7;border-radius:14px;padding:20px;margin-top:14px;text-align:right">
+                    <div style="font-size:17px;font-weight:600;margin-bottom:6px">הדוח שלך</div>
+                    <div style="font-size:15px;color:#5c6672;line-height:1.7">נועם ידפיס לך דוח חתום עם רשימת הקבצים וטביעות האימות. מזהה דוח: <span style="direction:ltr;unicode-bidi:embed;font-family:ui-monospace,Consolas,monospace">NOAM-2026-0418-R1</span></div>
+                  </div>
+
+                  <div style="margin-top:26px;background:#eaf4ee;border:1px solid #cfe4d7;border-radius:14px;padding:22px">
+                    <div style="font-size:21px;font-weight:700;color:#1c2430">אפשר לנתק את המכשיר</div>
+                    <div style="font-size:15px;color:#4d6a58;margin-top:6px">הכל נשמר ואומת. תודה.</div>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:center;gap:12px;margin-top:18px">
+                    <img src="assets/noam-heller.png" alt="נועם הלר" style="width:44px;height:44px;border-radius:50%;object-fit:cover">
+                    <div style="font-size:15px;color:#5c6672;text-align:right">שאלות? נועם הלר · <span style="direction:ltr;unicode-bidi:isolate;font-weight:600;color:#1c2430">052-898-8890</span><br>מרכז אורנים · כנפי נשרים 68, ירושלים</div>
+                  </div>
+
+                  <button onClick="{{ goCLang }}" style="cursor:pointer;margin-top:20px;background:#fff;border:1px solid #d7dee7;color:#5c6672;font-size:15px;padding:13px 22px;border-radius:10px">התחל מהתחלה (מוקאפ)</button>
+                </div>
+              </sc-if>
+
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;progress&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:68,&quot;min&quot;:1,&quot;max&quot;:100,&quot;step&quot;:1,&quot;unit&quot;:&quot;%&quot;,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;הדגמה&quot;}}">
+class Component extends DCLogic {
+  state = {
+    flow: 'operator', screen: 'queue', locked: true,
+    service: 'העברה', lang: 'עברית', tab: 'הכל',
+    selected: [0,1,2,3,4,6,7,9,10,11], signed: false,
+    tLines: [
+      { color:'#e6edf5', text:'NOAM station ST-02 · operator shell v0.9 (mockup)' },
+      { color:'#e7a64f', text:'privacy mode STRICT — file content, thumbnails and folder names are never shown here.' },
+      { color:'#7b8899', text:"type 'help' for commands · Tab inserts the next step" },
+      { color:'#7b8899', text:' ' }
+    ],
+    tInput: '', busy: false, done: [], mirror: 'idle', feed: [], copyPct: 0, hist: [], histIdx: -1
+  };
+  C = { cmd:'#e6edf5', out:'#9fd6a8', dim:'#7b8899', ok:'#7fd99a', warn:'#e7a64f', err:'#ef7b6c', info:'#8fc3f0' };
+  PROMPT = 'noam@st-02:~$ ';
+  SCRIPT = [
+    { key:'noam session open', cmd:'noam session open --case 2026-0418 --svc transfer --lang he', label:'פתיחת סשן', he:'נפתח סשן חדש. הטאבלט של הלקוח עבר למסך בחירת שפה.', mirror:'lang',
+      out:[['ok','✓ session 2026-0418 opened · operator noam · station ST-02'],['out','  service transfer · lang he · audit /var/noam/audit/2026-0418.log'],['info','→ tablet: language screen']] },
+    { key:'noam device', cmd:'noam device scan', label:'סריקת מכשירים', he:'זוהו טלפון וכרטיס SD. הלקוח רואה "המכשיר זוהה".', mirror:'connect',
+      out:[['dim','scanning usb bus …'],['out','dev0  android  SM-A546B  mtp    serial 9F2C-A81D-4477  ✓ unlocked'],['out','dev1  sdxc     64GB      fat32                        ✓ readable'],['info','→ tablet: device detected']] },
+    { key:'noam target', cmd:'noam target check --dest NOAM-SSD', label:'בדיקת יעד', he:'נבדק הדיסק שאליו נשמור: יש מספיק מקום, ובדיקת הכתיבה עברה.', mirror:'src',
+      out:[['out','dest  NOAM-SSD  1.0TB  free 812GB  fs exfat'],['ok','✓ write-test ok · space sufficient for dev0 (41.6GB)'],['info','→ tablet: source & target']] },
+    { key:'noam index', cmd:'noam index dev0 --counts-only', label:'מיפוי — ספירות בלבד', he:'הקבצים נספרו לפי סוג. שמות התיקיות הוחלפו במזהים (g01…g12) — השמות האמיתיים מוצגים רק ללקוח.', mirror:'browse',
+      out:[['dim','indexing dev0 …'],['out','total     2,974 files   41.6GB'],['out','  images  2,104         22.8GB'],['out','  video     138         16.1GB'],['out','  docs      612          2.4GB'],['out','  other     120          0.3GB'],['warn','groups: 12 · names withheld (client-only)'],['out','  g01 g02 g03 g04 g05 g06 g07 g08 g09 g10 g11 g12'],['info','→ tablet: browse & select']] },
+    { key:'noam wait', cmd:'noam wait selection', label:'המתנה לבחירת הלקוח', he:'הלקוח בוחר בעצמו מה להעביר. נועם מקבל רק כמה קבצים ובאיזה נפח.', mirror:'selected',
+      out:[['dim','waiting for client selection …'],['ok','✓ client confirmed · 10/12 groups · 1,247 files · 18.4GB'],['out','  selected g01 g02 g03 g04 g05 g07 g08 g10 g11 g12']] },
+    { key:'noam consent', cmd:'noam consent status', label:'בדיקת הסכמה', he:'הלקוח חתם על ההסכמה בטאבלט. החתימה נשמרה עם חותמת זמן.', mirror:'consent',
+      out:[['ok','✓ consent signed  2026-09-28T09:52:14+03:00'],['out','  signature sha256 7be1 04d9 … c04a']] },
+    { key:'noam copy', cmd:'noam copy dev0 --dest NOAM-SSD --verify sha256', label:'העתקה ואימות', he:'הקבצים מועתקים וכל אחד נבדק מול המקור (SHA-256). הלקוח רואה פס התקדמות.', mirror:'prog', progress:true,
+      out:[['dim','copying 1,247 files → NOAM-SSD · verify sha256']],
+      after:[['ok','✓ 1,247 copied · 1,247 verified · 0 failed'],['out','  manifest manifest-2026-0418.json  sha256 a3f9 71c2 … 4471'],['info','→ tablet: copy verified']] },
+    { key:'noam report', cmd:'noam report sign', label:'דוח חתום', he:'הופק דוח PDF חתום דיגיטלית. הלקוח רואה "העותק נכתב ואומת ✓".', mirror:'done',
+      out:[['out','report NOAM-2026-0418-R1.pdf'],['ok','✓ signed ECDSA P-256 · key fp 4C:19:AA:71'],['info','→ tablet: done']] },
+    { key:'noam session close', cmd:'noam session close', label:'סגירת סשן', he:'הסשן נסגר. הלקוח יכול לנתק את המכשיר בבטחה.', mirror:'bye',
+      out:[['ok','✓ dev0 safe to disconnect'],['ok','✓ session 2026-0418 closed · audit sealed'],['info','→ tablet: you may disconnect']] }
+  ];
+  line = (c, t) => ({ color: this.C[c] || this.C.out, text: t });
+  later = (ms, fn) => { this.timers = this.timers || []; this.timers.push(setTimeout(fn, ms)); };
+  componentWillUnmount() { (this.timers || []).forEach(clearTimeout); clearInterval(this.iv); }
+  componentDidUpdate() { if (this.termEl) this.termEl.scrollTop = this.termEl.scrollHeight; }
+  termRef = (el) => { this.termEl = el; };
+  inputRef = (el) => { this.inputEl = el; };
+  push = (arr) => this.setState(s => ({ tLines: s.tLines.concat(arr) }));
+  stream = (pairs, done) => {
+    pairs.forEach((p, i) => this.later(170 * (i + 1), () => this.push([this.line(p[0], p[1])])));
+    this.later(170 * (pairs.length + 1), done);
+  };
+  bar = (p) => { const n = Math.round(p / 5), fl = Math.round(1247 * p / 100); return '[' + '#'.repeat(n) + '.'.repeat(20 - n) + '] ' + String(p).padStart(3) + '%  ' + fl + '/1247  verified ' + fl; };
+  addFeed = (cmd, he, tone) => this.setState(s => ({ feed: [{ cmd, he, tone: tone || '#5c6672' }].concat(s.feed).slice(0, 6) }));
+  finish = (i) => {
+    const st = this.SCRIPT[i];
+    this.setState(s => ({ busy:false, mirror: st.mirror, done: s.done.includes(i) ? s.done : s.done.concat(i) }));
+    this.addFeed(st.cmd, st.he);
+  };
+  runStep = (i) => {
+    const st = this.SCRIPT[i];
+    this.setState({ busy:true });
+    this.stream(st.out, () => {
+      if (!st.progress) return this.finish(i);
+      this.push([this.line('out', this.bar(0))]);
+      this.setState({ mirror:'prog', copyPct:0 });
+      let p = 0;
+      this.iv = setInterval(() => {
+        p = Math.min(100, p + 4);
+        this.setState(s => { const l = s.tLines.slice(); l[l.length - 1] = this.line(p === 100 ? 'ok' : 'out', this.bar(p)); return { tLines: l, copyPct: p }; });
+        if (p >= 100) { clearInterval(this.iv); this.stream(st.after, () => this.finish(i)); }
+      }, 110);
+    });
+  };
+  nextIdx = () => { const i = this.SCRIPT.findIndex((_, k) => !this.state.done.includes(k)); return i; };
+  exec = (raw) => {
+    if (this.state.busy) return;
+    const cmd = (raw || '').trim();
+    this.setState(s => ({ tInput:'', hist: cmd ? s.hist.concat(cmd) : s.hist, histIdx: -1 }));
+    this.push([this.line('cmd', this.PROMPT + cmd)]);
+    if (!cmd) return;
+    if (cmd === 'clear') return this.setState({ tLines: [] });
+    if (cmd === 'help') return this.push([
+      ['dim','session   noam session open | close'], ['dim','devices   noam device scan · noam target check'],
+      ['dim','data      noam index dev0 --counts-only · noam wait selection'], ['dim','copy      noam consent status · noam copy dev0 --verify sha256'],
+      ['dim','report    noam report sign'], ['dim','other     whoami · clear'],
+      ['warn','content commands (ls, cat, open, find …) are disabled by policy P-01']
+    ].map(p => this.line(p[0], p[1])));
+    if (cmd === 'whoami') return this.push([this.line('out', 'noam · role operator · content access: none · station ST-02')]);
+    if (/^(ls|cat|find|tree|open|xdg-open|head|tail|less|more|cp|mv|du|file|strings|explorer|dir)\b/.test(cmd) || /dcim|sdcard|\/mnt\/dev|--names|--show|thumb/i.test(cmd)) {
+      this.push([
+        this.line('err', '✕ blocked by privacy policy P-01: content paths are client-only'),
+        this.line('dim', '  this shell exposes counts, status and hashes only · try: noam index dev0 --counts-only'),
+        this.line('dim', '  attempt recorded in audit log')
+      ]);
+      return this.addFeed(cmd, 'ניסיון גישה לתוכן נחסם ונרשם ביומן. גם המפעיל עצמו לא יכול לראות תוכן.', '#c0392b');
+    }
+    const i = this.SCRIPT.findIndex(x => cmd.startsWith(x.key));
+    if (i >= 0) return this.runStep(i);
+    this.push([this.line('err', 'noam: command not found: ' + cmd.split(' ')[0] + " · type 'help'")]);
+  };
+  onKey = (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); this.exec(e.target.value); }
+    else if (e.key === 'Tab') { e.preventDefault(); const i = this.nextIdx(); if (i >= 0) this.setState({ tInput: this.SCRIPT[i].cmd }); }
+    else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      const h = this.state.hist; if (!h.length) return;
+      const idx = this.state.histIdx < 0 ? h.length - 1 : Math.max(0, this.state.histIdx - 1);
+      this.setState({ histIdx: idx, tInput: h[idx] });
+    }
+  };
+  resetNoam = () => {
+    (this.timers || []).forEach(clearTimeout); this.timers = []; clearInterval(this.iv);
+    this.setState({ tLines: [{ color:'#e6edf5', text:'NOAM station ST-02 · operator shell v0.9 (mockup)' }, { color:'#7b8899', text:'session reset' }, { color:'#7b8899', text:' ' }], tInput:'', busy:false, done:[], mirror:'idle', feed:[], copyPct:0 });
+  };
+  noamVals() {
+    const s = this.state;
+    const ni = this.nextIdx();
+    const M = {
+      idle: { t:'מסך המתנה', s:'הטאבלט ממתין לפתיחת סשן', k:'text' },
+      lang: { t:'בחירת שפה', s:'הלקוח בוחר שפה', k:'buttons' },
+      connect: { t:'חיבור מכשיר', s:'המכשיר זוהה ✓', k:'text' },
+      src: { t:'מקור ויעד', s:'יעד NOAM-SSD · מקום פנוי מספיק ✓', k:'text' },
+      browse: { t:'דפדוף ובחירה', s:'הלקוח רואה את התיקיות שלו. כאן: מוסתר.', k:'grid' },
+      selected: { t:'דפדוף ובחירה', s:'נבחרו 1,247 קבצים', k:'grid' },
+      consent: { t:'הסכמה וחתימה', s:'נחתם ✓', k:'text' },
+      prog: { t:'מעתיק ומאמת', s:'אל תנתק את המכשיר', k:'bar' },
+      done: { t:'העותק נכתב ואומת ✓', s:'הדוח החתום מוכן', k:'check' },
+      bye: { t:'אפשר לנתק את המכשיר', s:'הסשן נסגר', k:'check' }
+    };
+    const m = M[s.mirror] || M.idle;
+    const selOn = s.mirror !== 'browse';
+    const ver = Math.round(1247 * s.copyPct / 100);
+    const has = (i) => s.done.includes(i);
+    const G = '#9fd6a8', D = '#6f7d8f';
+    return {
+      noamNav: this.SCRIPT.map((st, i) => ({
+        label: st.label, n: has(i) ? '✓' : i + 1,
+        go: () => this.exec(st.cmd),
+        bg: i === ni ? '#e7f0f9' : 'transparent',
+        fg: has(i) ? '#2e8b57' : i === ni ? '#1f3a5f' : '#5c6672'
+      })),
+      tLines: s.tLines, tInput: s.tInput,
+      onInput: (e) => this.setState({ tInput: e.target.value }),
+      onKey: this.onKey, termRef: this.termRef, inputRef: this.inputRef,
+      focusTerm: () => { if (this.inputEl) this.inputEl.focus(); },
+      inputPh: s.busy ? 'running…' : (ni >= 0 ? 'Tab → ' + this.SCRIPT[ni].cmd : "type 'help'"),
+      runNext: () => { if (ni >= 0) this.exec(this.SCRIPT[ni].cmd); },
+      nextLabel: s.busy ? 'מריץ…' : (ni >= 0 ? 'הרץ צעד הבא: ' + this.SCRIPT[ni].label : 'כל הצעדים הושלמו ✓'),
+      tryBlocked: () => this.exec('ls /sdcard/DCIM/Camera'),
+      resetNoam: this.resetNoam,
+      statusParts: [
+        { text: 'case ' + (has(0) ? '2026-0418' : '—'), color: has(0) ? G : D },
+        { text: 'dev0 ' + (has(1) ? 'android ✓' : '—'), color: has(1) ? G : D },
+        { text: 'dest ' + (has(2) ? '812G free ✓' : '—'), color: has(2) ? G : D },
+        { text: 'verified ' + (s.copyPct ? ver + '/1247' : '—'), color: s.copyPct === 100 ? G : s.copyPct ? '#8fc3f0' : D },
+        { text: 'content: hidden', color: '#e7a64f' }
+      ],
+      curCmd: s.feed[0] ? s.feed[0].cmd : '—',
+      curHe: s.feed[0] ? s.feed[0].he : 'עדיין לא הורצה פקודה. לחץ "הרץ צעד הבא" או הקש Tab בטרמינל.',
+      mTitle: m.t, mSub: m.s,
+      mIsButtons: m.k === 'buttons', mIsGrid: m.k === 'grid', mIsBar: m.k === 'bar', mIsCheck: m.k === 'check',
+      mPct: s.copyPct, mPctW: s.copyPct + '%',
+      miniLangs: ['עברית','ייִדיש','English','Русский','Français'],
+      miniGrid: [0,1,2,3,4,5,6,7].map(i => ({ bd: selOn && i !== 5 ? '#2f6fb2' : '#d7dee7' })),
+      feed: s.feed, feedEmpty: s.feed.length === 0
+    };
+  }
+
+  go = (screen) => () => this.setState({ screen });
+  setFlow = (flow) => () => this.setState({ flow, screen: flow === 'operator' ? 'queue' : flow === 'noam' ? 'term' : 'lang' });
+
+  chip(status) {
+    if (status === 'פעיל') return { chipBg:'#e7f0f9', chipFg:'#2f6fb2' };
+    if (status === 'הושלם') return { chipBg:'#eaf4ee', chipFg:'#2e8b57' };
+    return { chipBg:'#f0f3f7', chipFg:'#5c6672' };
+  }
+
+  sigRef = (el) => {
+    if (!el || el.__wired) return;
+    el.__wired = true;
+    this.sigEl = el;
+    const fit = () => {
+      const r = el.getBoundingClientRect();
+      el.width = Math.max(1, Math.round(r.width));
+      el.height = Math.max(1, Math.round(r.height));
+      const c = el.getContext('2d');
+      c.lineWidth = 2.6; c.lineCap = 'round'; c.strokeStyle = '#1c2430';
+    };
+    fit();
+    let drawing = false;
+    const pos = (e) => {
+      const r = el.getBoundingClientRect();
+      const p = e.touches ? e.touches[0] : e;
+      return [p.clientX - r.left, p.clientY - r.top];
+    };
+    const ctx = () => el.getContext('2d');
+    const start = (e) => {
+      e.preventDefault(); drawing = true;
+      const c = ctx(); c.lineWidth = 2.6; c.lineCap = 'round'; c.strokeStyle = '#1c2430';
+      c.beginPath(); c.moveTo(...pos(e));
+      if (!this.state.signed) this.setState({ signed: true });
+    };
+    const move = (e) => { if (!drawing) return; e.preventDefault(); const c = ctx(); c.lineTo(...pos(e)); c.stroke(); };
+    const end = () => { drawing = false; };
+    el.addEventListener('mousedown', start); el.addEventListener('touchstart', start, { passive:false });
+    window.addEventListener('mousemove', move); el.addEventListener('touchmove', move, { passive:false });
+    window.addEventListener('mouseup', end); el.addEventListener('touchend', end);
+  };
+
+  clearSig = () => {
+    const el = this.sigEl;
+    if (el) el.getContext('2d').clearRect(0, 0, el.width, el.height);
+    this.setState({ signed: false });
+  };
+
+  renderVals() {
+    const s = this.state;
+    const isClient = s.flow === 'client';
+    const isNoam = s.flow === 'noam';
+    const isOp = s.flow === 'operator';
+    const nv = this.noamVals();
+    const pct = Math.max(1, Math.min(100, this.props.progress ?? 68));
+    const total = 2974;
+    const opScreens = [
+      ['queue','תור סשנים'], ['new','פתיחת סשן חדש'], ['active','מסך סטטוס פעיל'],
+      ['finish','סיום סשן'], ['history','היסטוריית סשנים'], ['diag','לוח אבחון'], ['settings','הגדרות']
+    ];
+    const clScreens = [
+      ['lang','בחירת שפה'], ['connect','חיבור מכשיר'], ['src','מקור ויעד'], ['browse','דפדוף ובחירה'],
+      ['consent','הסכמה וחתימה'], ['prog','התקדמות'], ['done','סיום']
+    ];
+    const list = isClient ? clScreens : isNoam ? [['term','טרמינל']] : opScreens;
+    const active = list.some(([k]) => k === s.screen) ? s.screen : list[0][0];
+
+    const line = (d) => React.createElement('svg', { width:78, height:78, viewBox:'0 0 78 78', fill:'none', stroke:'#1f3a5f', strokeWidth:1.6, strokeLinecap:'round', strokeLinejoin:'round' }, d);
+    const phone = line([
+      React.createElement('rect', { key:'a', x:22, y:6, width:34, height:56, rx:5 }),
+      React.createElement('path', { key:'b', d:'M34 12h10' }),
+      React.createElement('path', { key:'c', d:'M39 62v10M30 72h18' })
+    ]);
+    const lock = line([
+      React.createElement('rect', { key:'a', x:18, y:32, width:42, height:32, rx:6 }),
+      React.createElement('path', { key:'b', d:'M28 32V22a11 11 0 0 1 22 0' }),
+      React.createElement('circle', { key:'c', cx:39, cy:48, r:3.5 })
+    ]);
+    const transfer = line([
+      React.createElement('rect', { key:'a', x:10, y:24, width:24, height:34, rx:4 }),
+      React.createElement('rect', { key:'b', x:44, y:24, width:24, height:34, rx:4 }),
+      React.createElement('path', { key:'c', d:'M34 36h10M40 32l4 4-4 4' }),
+      React.createElement('path', { key:'d', d:'M44 48H34M38 44l-4 4 4 4' })
+    ]);
+
+    const tiles = ['ברית של יוסי','שבת בגליל','מסמכי דירה','חתונה 2021','סבתא ורדה','טיול לצפת','קבלות 2024','יום הולדת 5','בר מצווה','סרטון הקידוש','תעודות','אלבום ילדות']
+      .map((name, i) => {
+        const kinds = ['תמונה','תמונה','מסמך','תמונה','תמונה','תמונה','מסמך','וידאו','תמונה','וידאו','מסמך','תמונה'];
+        const tints = ['#dfe7ef','#e6e2da','#eceff3','#e3e9e2','#e9e4e6','#dde6ea','#eceff3','#e7e3dd','#e0e6ee','#e4e2e8','#eceff3','#e8e5df'];
+        const on = s.selected.includes(i);
+        return {
+          name, kind: kinds[i], tint: tints[i],
+          metaCount: (i % 3 === 0 ? '148 קבצים · ' : i % 3 === 1 ? '62 קבצים · ' : '9 קבצים · '),
+          metaSize: (i % 3 === 0 ? '2.1 GB' : i % 3 === 1 ? '840 MB' : '12 MB'),
+          bd: on ? '#2f6fb2' : '#d7dee7', dot: on ? '✓' : '', dotBg: on ? '#2f6fb2' : 'rgba(255,255,255,.85)',
+          toggle: () => this.setState(st => ({ selected: st.selected.includes(i) ? st.selected.filter(x => x !== i) : st.selected.concat(i) }))
+        };
+      });
+
+    const allOn = s.selected.length === 12;
+    const selCount = (s.selected.length * 103 + 214).toLocaleString('en-US');
+    const selSize = (s.selected.length * 1.53 + 3).toFixed(1) + ' GB';
+
+    return {
+      isClient,
+      navTitle: isClient ? 'ממשק הלקוח · טאבלט' : isNoam ? 'מסך נועם · צעדי הסשן' : 'קונסולת המפעיל · מחשב',
+      ...nv, isNoam,
+      flowTabs: [['operator','קונסולת המפעיל'],['noam','מסך נועם'],['client','ממשק הלקוח']].map(([k, label]) => ({ label, go: this.setFlow(k), bg: s.flow === k ? '#fff' : 'transparent', fg: s.flow === k ? '#1f3a5f' : 'rgba(255,255,255,.82)' })),
+      showOperator: this.setFlow('operator'),
+      showClient: this.setFlow('client'),
+      opTabBg: isClient ? 'transparent' : '#fff', opTabFg: isClient ? 'rgba(255,255,255,.82)' : '#1f3a5f',
+      clTabBg: isClient ? '#fff' : 'transparent', clTabFg: isClient ? '#1f3a5f' : 'rgba(255,255,255,.82)',
+      navItems: isNoam ? nv.noamNav : list.map(([k, label], i) => ({
+        label, n: i + 1, go: this.go(k),
+        bg: active === k ? '#e7f0f9' : 'transparent',
+        fg: active === k ? '#1f3a5f' : '#5c6672'
+      })),
+
+      sQueue: isOp && active === 'queue',
+      sNew: isOp && active === 'new',
+      sActive: isOp && active === 'active',
+      sFinish: isOp && active === 'finish',
+      sHistory: isOp && active === 'history',
+      sDiag: isOp && active === 'diag',
+      sSettings: isOp && active === 'settings',
+      cLang: isClient && active === 'lang',
+      cConnect: isClient && active === 'connect',
+      cSrc: isClient && active === 'src',
+      cBrowse: isClient && active === 'browse',
+      cConsent: isClient && active === 'consent',
+      cProg: isClient && active === 'prog',
+      cDone: isClient && active === 'done',
+      clientStep: 'שלב ' + (clScreens.findIndex(([k]) => k === active) + 1) + ' מתוך 7',
+
+      goQueue: this.go('queue'), goNew: this.go('new'), goActive: this.go('active'),
+      goFinish: this.go('finish'), goDiag: this.go('diag'),
+      goCSrc: this.go('src'), goCBrowse: this.go('browse'), goCConsent: this.go('consent'),
+      goCProg: this.go('prog'), goCDone: this.go('done'), goCLang: this.go('lang'),
+
+      pct, pctW: pct + '%',
+      verified: Math.round(total * pct / 100).toLocaleString('en-US'),
+      verifiedClient: Math.round(1247 * pct / 100).toLocaleString('en-US'),
+      remaining: (1247 - Math.round(1247 * pct / 100)).toLocaleString('en-US'),
+
+      queue: [
+        { file:'2026-0418', name:'מרים לוינגר', service:'העברה', lang:'עברית', time:'09:41', status:'פעיל' },
+        { file:'2026-0419', name:'הרב א. פרידמן', service:'גיבוי', lang:'יידיש', time:'10:05', status:'ממתין' },
+        { file:'2026-0420', name:'עו״ד ש. ברששת', service:'שחזור', lang:'עברית', time:'10:30', status:'ממתין' },
+        { file:'2026-0421', name:'Nadia Volkov', service:'גיבוי', lang:'רוסית', time:'11:15', status:'ממתין' },
+        { file:'2026-0417', name:'יעקב אזולאי', service:'העברה', lang:'עברית', time:'08:20', status:'הושלם' }
+      ].map(r => Object.assign({}, r, this.chip(r.status), { go: this.go(r.status === 'פעיל' ? 'active' : 'new') })),
+
+      services: [
+        { label:'גיבוי', hint:'עותק שני, המקור נשאר' },
+        { label:'העברה', hint:'העתקה למדיה חדשה' },
+        { label:'שחזור', hint:'החזרת נתונים מגיבוי' }
+      ].map(x => ({
+        label:x.label, hint:x.hint, pick: () => this.setState({ service:x.label }),
+        bd: s.service === x.label ? '#2f6fb2' : '#d7dee7',
+        bg: s.service === x.label ? '#e7f0f9' : '#fff',
+        fg: s.service === x.label ? '#1f3a5f' : '#1c2430'
+      })),
+
+      cats: [
+        { label:'תמונות', count:'2,104', size:'\u206622.8 GB\u2069', ok:'1,430' },
+        { label:'וידאו', count:'138', size:'\u206616.1 GB\u2069', ok:'91' },
+        { label:'מסמכים', count:'612', size:'\u20662.4 GB\u2069', ok:'444' },
+        { label:'אחר', count:'120', size:'\u20660.3 GB\u2069', ok:'57' }
+      ],
+
+      logLines: [
+        '09:41:22  session 2026-0418 opened',
+        '09:41:40  device SM-A546B attached (MTP)',
+        '09:42:03  index complete  files=2974  41.6GB',
+        '09:42:05  target /Volumes/NOAM-SSD  free=812GB',
+        '09:42:07  consent recorded  sig=ok',
+        '09:44:31  copy 1200/2974  verify sha256 ok',
+        '09:46:02  WARN skip idx1842  ERR_READ_TIMEOUT',
+        '09:48:60  copy 2020/2974  verify sha256 ok'
+      ],
+
+      summary: [
+        { k:'סה״כ קבצים במקור', v:'2,974' },
+        { k:'הועתקו', v:'2,974' },
+        { k:'אומתו', v:'2,973' },
+        { k:'דולגו', v:'1' },
+        { k:'נפח שנכתב', v:'\u206641.6 GB\u2069' },
+        { k:'משך הסשן', v:'00:11:48' }
+      ],
+
+      history: [
+        { date:'2026-09-08', name:'יעקב אזולאי', file:'2026-0417', service:'העברה', files:'1,882', verify:'אומת ✓', fg:'#2e8b57' },
+        { date:'2026-09-07', name:'רחל שטרן', file:'2026-0411', service:'גיבוי', files:'4,210', verify:'אומת ✓', fg:'#2e8b57' },
+        { date:'2026-09-07', name:'עו״ד ד. כהן', file:'2026-0409', service:'שחזור', files:'318', verify:'אומת · 2 דילוגים', fg:'#d98a2b' },
+        { date:'2026-09-05', name:'משפחת ויזל', file:'2026-0402', service:'גיבוי', files:'7,004', verify:'אומת ✓', fg:'#2e8b57' },
+        { date:'2026-09-04', name:'Pierre Dubois', file:'2026-0398', service:'העברה', files:'921', verify:'נכשל · הופסק', fg:'#c0392b' },
+        { date:'2026-09-03', name:'שרה בן־חמו', file:'2026-0390', service:'גיבוי', files:'2,455', verify:'אומת ✓', fg:'#2e8b57' }
+      ],
+
+      checks: [
+        { title:'המכשיר מזוהה?', state:'כן — טלפון Android מחובר ונקרא.', action:'אין צורך בפעולה.', color:'#2e8b57', icon:'✓' },
+        { title:'מקום פנוי ביעד', state:'\u2066812 GB\u2069 פנויים מתוך \u20661 TB\u2069.', action:'מספיק בהרבה לסשן הנוכחי (\u206641.6 GB\u2069).', color:'#2e8b57', icon:'✓' },
+        { title:'שגיאות אחרונות', state:'קובץ אחד לא נקרא ודולג.', action:'ניתן לנסות שוב בסוף הסשן. הדילוג נרשם במניפסט.', color:'#d98a2b', icon:'!' },
+        { title:'מפתח חתימה', state:'טעון ותקף עד 2028.', action:'אין צורך בפעולה.', color:'#2e8b57', icon:'✓' },
+        { title:'כבל / חיבור', state:'יציב. חיבור אחד התנתק והתאושש הבוקר.', action:'אם קורה שוב — החלף כבל ובדוק מחדש.', color:'#d98a2b', icon:'!' },
+        { title:'שעון ותיעוד', state:'שעון מסונכרן, יומן נכתב לדיסק.', action:'אין צורך בפעולה.', color:'#2e8b57', icon:'✓' }
+      ],
+
+      locked: !!s.locked, unlocked: !s.locked,
+      unlock: () => this.setState({ locked:false }),
+      lock: () => this.setState({ locked:true }),
+
+      langToggles: ['עברית','יידיש','אנגלית','רוסית','צרפתית'].map((label, i) => ({
+        label, bg: i < 4 ? '#2e8b57' : '#d7dee7', side: i < 4 ? 'left' : 'right'
+      })),
+
+      languages: ['עברית','ייִדיש','English','Русский','Français'].map(label => ({
+        label, bd: s.lang === label ? '#2f6fb2' : '#d7dee7',
+        pick: () => this.setState({ lang: label, screen: 'connect' })
+      })),
+
+      steps: [
+        { n:'1', title:'חבר את הכבל', body:'הכבל מוכן על השולחן. חבר אותו לטלפון.', art: transfer },
+        { n:'2', title:'שחרר נעילה', body:'הזן את הקוד שלך בטלפון כדי לפתוח אותו.', art: lock },
+        { n:'3', title:'בחר "העברת קבצים"', body:'תופיע הודעה בטלפון — בחר בה. אם לא, נועם יעזור.', art: phone }
+      ],
+
+      sources: [
+        { label:'טלפון Android', metaCount:'2,974 קבצים · ', metaSize:'41.6 GB', id:'SM-A546B' },
+        { label:'כרטיס SD', metaCount:'318 קבצים · ', metaSize:'6.2 GB', id:'SDXC 64GB' },
+        { label:'דיסק חיצוני', metaCount:'לא מחובר', metaSize:'', id:'—' }
+      ].map((d, i) => ({ ...d, bd: i === 0 ? '#2f6fb2' : '#d7dee7', pick: () => {} })),
+
+      tabs: ['הכל','תמונות','וידאו','מסמכים'].map(label => ({
+        label, pick: () => this.setState({ tab: label }),
+        bd: s.tab === label ? '#2f6fb2' : '#d7dee7',
+        bg: s.tab === label ? '#2f6fb2' : '#fff',
+        fg: s.tab === label ? '#fff' : '#1c2430'
+      })),
+      tiles, allLabel: allOn ? 'בטל בחירה' : 'בחר הכל',
+      toggleAll: () => this.setState({ selected: allOn ? [] : [0,1,2,3,4,5,6,7,8,9,10,11] }),
+      selCount, selSize,
+
+      sigRef: this.sigRef, clearSig: this.clearSig,
+      sigHint: s.signed ? 'החתימה נרשמה. אפשר לאשר.' : 'החתימה נשמרת בדוח יחד עם התאריך והשעה.',
+
+      finishToggles: [
+        { label:'הצפן בסיסמה', hint:'רק מי שיודע את הסיסמה יוכל לפתוח את העותק.', on:true },
+        { label:'שלח לענן', hint:'עותק נוסף מחוץ לבית. כבוי כברירת מחדל.', on:false }
+      ].map(t => ({ label:t.label, hint:t.hint, bg: t.on ? '#2e8b57' : '#d7dee7', side: t.on ? 'left' : 'right', toggle: () => {} }))
+    };
+  }
+}
+</script>
+</body>
+</html>

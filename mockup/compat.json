@@ -1,0 +1,45 @@
+{
+  "v": 1,
+  "mode": "omelette",
+  "root": "project/",
+  "title": "מוקאפ קליקביל עם מתג זרמים",
+  "entry": "NOAM Mockup.dc.html",
+  "pages": [
+    {
+      "path": "NOAM Mockup (standalone).html",
+      "title": "Bundled Page",
+      "kind": "plain"
+    },
+    {
+      "path": "noam-standalone-src.dc.html",
+      "title": "noam-standalone-src",
+      "kind": "page"
+    },
+    {
+      "path": "NOAM Mockup.dc.html",
+      "title": "NOAM Mockup",
+      "kind": "page"
+    }
+  ],
+  "migratorVersion": "artifact-migrator (claude-design-backend ed667f7ac9c1)",
+  "createdAt": "2026-11-09T20:35:26.826Z",
+  "source": {
+    "v": 1,
+    "app": "claude-design",
+    "url": "https://claude.ai/design/p/1c1d1855-5bcc-40af-8f8b-3d69d33a9a76",
+    "projectId": "1c1d1855-5bcc-40af-8f8b-3d69d33a9a76",
+    "exportedAt": "2026-11-09T20:35:26.826Z"
+  },
+  "report": {
+    "itemsVersion": 2,
+    "pages": {
+      "total": 3,
+      "ok": 3,
+      "partial": 0,
+      "notMigrated": 0
+    },
+    "items": [],
+    "truncated": 0,
+    "truncatedLeftOut": 0
+  }
+}
