@@ -19,8 +19,16 @@ def category(name: str) -> str:
     return "other"
 
 
+def top_folder(rel_folder: str, depth: int = 1) -> str:
+    """התיקייה הראשית של נתיב: DCIM/Camera → DCIM. קובץ בשורש → "" (קבוצה משלו).
+    depth=2 ב-MTP, כי הרכיב הראשון הוא מזהה האחסון (s10001/DCIM/Camera → s10001/DCIM)."""
+    parts = [p for p in rel_folder.split("/") if p and p != "."]
+    return "/".join(parts[:depth])
+
+
 class GroupNamer:
-    """נותן לכל תיקייה מזהה אנונימי יציב (g01, g02…) לפי סדר ההופעה הראשונה של קובץ בה."""
+    """נותן לכל תיקייה ראשית מזהה אנונימי יציב (g01, g02…) לפי סדר ההופעה הראשונה של קובץ בה.
+    כל מה שבתוך תיקייה ראשית — כולל תת-תיקיות — נספר באותה קבוצה."""
 
     def __init__(self) -> None:
         self._ids: dict[str, str] = {}

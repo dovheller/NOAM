@@ -24,7 +24,13 @@ PHONE = {
     0x10001: {
         "files": {"root.txt": b"r"},
         "dirs": {
-            "DCIM": {"dirs": {"Camera": {"files": {"a.jpg": b"A" * 10, "b.mp4": b"B" * 9}}}},
+            "DCIM": {
+                "files": {"top.jpg": b"T"},
+                "dirs": {
+                    "Camera": {"files": {"a.jpg": b"A" * 10, "b.mp4": b"B" * 9}},
+                    "Screenshots": {"files": {"s.png": b"S" * 3}},
+                },
+            },
             "Documents": {"files": {"c.pdf": b"C" * 7}},
         },
     }
@@ -59,6 +65,19 @@ def test_mass_storage_walk_and_groups(tmp_path):
     assert {e.category for e in entries} == {"images", "video", "docs"}
     by_dir = {e.rel_path.split("/")[0]: e.group for e in entries}
     assert by_dir["DCIM"] != by_dir["docs"]
+
+
+def test_mass_storage_groups_by_top_folder(tmp_path):
+    root = tmp_path / "SD"
+    for d in ("DCIM/Camera", "DCIM/Screenshots", "Music"):
+        (root / d).mkdir(parents=True)
+    (root / "DCIM/Camera/a.jpg").write_bytes(b"x")
+    (root / "DCIM/Screenshots/b.png").write_bytes(b"x")
+    (root / "Music/c.mp3").write_bytes(b"x")
+    (root / "loose.txt").write_bytes(b"x")
+    g = {e.rel_path: e.group for e in MassStorageSource(root).walk()}
+    assert g["DCIM/Camera/a.jpg"] == g["DCIM/Screenshots/b.png"]
+    assert len({g["DCIM/Camera/a.jpg"], g["Music/c.mp3"], g["loose.txt"]}) == 3
 
 
 def test_mass_storage_skips_symlinks(tmp_path):
@@ -117,10 +136,11 @@ def test_mtp_walk():
     fake, src = make_src()
     entries = list(src.walk())
     names = {e.rel_path.rsplit("/", 1)[1] for e in entries}
-    assert names == {"root.txt", "a.jpg", "b.mp4", "c.pdf"}
-    assert [e.idx for e in entries] == list(range(4))
+    assert names == {"root.txt", "top.jpg", "a.jpg", "b.mp4", "s.png", "c.pdf"}
+    assert [e.idx for e in entries] == list(range(6))
     groups = {e.rel_path.rsplit("/", 1)[1]: e.group for e in entries}
-    assert groups["a.jpg"] == groups["b.mp4"]
+    # כל DCIM — כולל Camera ו-Screenshots — היא קבוצה אחת
+    assert groups["a.jpg"] == groups["b.mp4"] == groups["s.png"] == groups["top.jpg"]
     assert len({groups["root.txt"], groups["a.jpg"], groups["c.pdf"]}) == 3
     assert fake.destroyed > 0  # הרשימות של libmtp משוחררות
 

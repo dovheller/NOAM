@@ -13,7 +13,7 @@ import ctypes.util
 from collections.abc import Iterator
 
 from .base import DeviceInfo, Entry, Sink, Source
-from .categories import GroupNamer, category
+from .categories import GroupNamer, category, top_folder
 from .errors import DeviceDisconnected, DeviceError, MTPError
 
 FILES_AND_FOLDERS_ROOT = 0xFFFFFFFF
@@ -256,7 +256,7 @@ class MTPSource(Source):
                         continue
                     yield Entry(
                         idx=idx,
-                        group=groups(prefix),
+                        group=groups(top_folder(prefix, depth=2)),
                         rel_path=f"{prefix}/{name}",
                         size=size,
                         category=category(name),

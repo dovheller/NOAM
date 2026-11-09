@@ -5,7 +5,7 @@ from collections.abc import Iterator
 from pathlib import Path
 
 from .base import DeviceInfo, Entry, Sink, Source
-from .categories import GroupNamer, category
+from .categories import GroupNamer, category, top_folder
 from .errors import DeviceDisconnected, DeviceError
 
 CHUNK = 1024 * 1024
@@ -33,7 +33,7 @@ class MassStorageSource(Source):
             rel = path.relative_to(self.root)
             yield Entry(
                 idx=idx,
-                group=groups(rel.parent.as_posix()),
+                group=groups(top_folder(rel.parent.as_posix())),
                 rel_path=rel.as_posix(),
                 size=path.stat().st_size,
                 category=category(path.name),
