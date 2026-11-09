@@ -1,0 +1,24 @@
+# העתק ל-config.toml (שלא נכנס לריפו) ומלא.
+
+[station]
+id = "ST-02"
+display_name = "נועם הלר"
+address = "מרכז אורנים · כנפי נשרים 68, ירושלים"
+
+[paths]
+audit_dir = "./audit"
+reports_dir = "./reports"
+folder_template = "/{case}/{date}/{category}"
+
+[targets]
+default = "NOAM-SSD"
+
+[languages]
+enabled = ["he", "yi", "en", "ru"]   # "fr" זמין, כבוי
+
+[signing]
+private_key_path = "./keys/station.pem"   # לא בריפו
+algorithm = "ECDSA-P256"
+
+[privacy]
+mode = "strict"

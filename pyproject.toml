@@ -1,0 +1,25 @@
+[project]
+name = "noam"
+version = "0.1.0"
+description = "NOAM — privacy-first backup, transfer and recovery station"
+requires-python = ">=3.11"
+dependencies = [
+  "fpdf2>=2.7",
+  "python-bidi>=0.4",
+  "pyzipper>=0.3",
+  "cryptography>=42",
+]
+
+[project.optional-dependencies]
+layer2 = ["wa-crypt-tools"]
+dev = ["pytest>=8", "ruff>=0.5"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

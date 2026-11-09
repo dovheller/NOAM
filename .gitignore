@@ -1,0 +1,34 @@
+# ---- לעולם לא נכנס לריפו: נתוני לקוח, מפתחות, דוחות ----
+*.crypt12
+*.crypt14
+*.crypt15
+msgstore.db*
+wa.db*
+key
+*.key
+*.pem
+*.p12
+backups/
+cases/
+reports/
+manifests/
+audit/
+enc-tmp/
+config.toml
+.env
+
+# ---- Python ----
+__pycache__/
+*.pyc
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+
+# ---- מערכת ----
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

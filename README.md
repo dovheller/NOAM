@@ -10,6 +10,21 @@
 | `mockup/NOAM Mockup (standalone).html` | גרסה ארוזה בקובץ אחד עם כל ארבע הלשוניות — נפתחת בכל דפדפן, גם בלי אינטרנט (רק הגופן דורש רשת) |
 | `mockup/noam-standalone-src.dc.html` | המקור של הגרסה הארוזה |
 | `mockup/support.js`, `mockup/assets/` | ה-runtime והתמונות של המוקאפ |
+| `ROADMAP.md` | **חלוקת העבודה למתכנת — 13 חבילות עבודה, לפי סדר** |
+| `CLAUDE.md` | כללי עבודה ולקחים שכבר נלמדו |
+| `docs/` | ארכיטקטורה, מודל פרטיות, אפיון שכבה 1, פורמט הדוח, טפסי הסכמה |
+| `src/noam/` | שלד הקוד של הקיוסק (שכבה 1) |
+| `src/noam_l2/` | שלד הקוד של ארכיון WhatsApp (שכבה 2) |
+| `tests/` | בדיקות (ממתינות למימוש) |
 | `docs/WHATSAPP_ARCHIVE_SPEC.md` | אפיון שחזור ארכיון WhatsApp, שכבה 2 (גרסה מתוקנת) |
 
 קובצי `.dc.html` הם פורמט של Claude Design ונטענים דרך `support.js`.
+
+## התחלה
+
+```bash
+pip install -e ".[dev]"
+pytest
+```
+
+מתחילים מ-WP0 ב-`ROADMAP.md`.
