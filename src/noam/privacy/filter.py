@@ -1,7 +1,7 @@
 """WP6 — מה שיוצא למפעיל: ספירות, נפחים, סטטוס, hash. שום דבר אחר."""
 from __future__ import annotations
 
-from typing import Iterable
+from collections.abc import Iterable
 
 from noam.device.base import Entry
 

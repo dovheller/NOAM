@@ -2,8 +2,9 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from collections.abc import Iterator
 from dataclasses import dataclass
-from typing import BinaryIO, Iterator
+from typing import BinaryIO
 
 
 @dataclass(frozen=True)

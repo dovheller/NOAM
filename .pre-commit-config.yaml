@@ -1,0 +1,22 @@
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.5.7
+    hooks:
+      - id: ruff
+  - repo: local
+    hooks:
+      - id: block-client-data
+        name: חסימת קובצי לקוח ומפתחות
+        entry: "קובץ לקוח או מפתח — אסור בריפו"
+        language: fail
+        files: '(\.crypt1[245]$|msgstore\.db|(^|/)wa\.db|(^|/)key$|\.key$|\.pem$|\.p12$)'
+      - id: pytest
+        name: pytest
+        entry: pytest -q
+        language: system
+        pass_filenames: false
+        always_run: true

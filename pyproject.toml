@@ -8,11 +8,13 @@ dependencies = [
   "python-bidi>=0.4",
   "pyzipper>=0.3",
   "cryptography>=42",
+  "fastapi>=0.110",
+  "uvicorn>=0.29",
 ]
 
 [project.optional-dependencies]
 layer2 = ["wa-crypt-tools"]
-dev = ["pytest>=8", "ruff>=0.5"]
+dev = ["pytest>=8", "ruff>=0.5", "pre-commit>=3.7"]
 
 [build-system]
 requires = ["setuptools>=68"]
