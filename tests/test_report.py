@@ -40,7 +40,7 @@ def make_data(**kw) -> ReportData:
     m.skipped = [SkipRecord(3, "g02", "ERR_READ_FAILED")]
     t0 = datetime(2026, 9, 28, 9, 41, 22, tzinfo=UTC)
     d = {
-        "case_id": "2026-0418", "service": "transfer", "operator": "נועם", "station_id": "ST-02",
+        "case_id": "2026-0418", "client_name": "מרים לוינגר", "service": "transfer", "operator": "נועם", "station_id": "ST-02",
         "station_name": "נועם הלר", "station_address": "מרכז אורנים · כנפי נשרים 68, ירושלים",
         "started_at": t0, "ended_at": t0 + timedelta(minutes=11, seconds=48),
         "device_model": "SM-A546B", "device_id": "9F2C-A81D-4477", "device_interface": "mtp",
@@ -83,6 +83,7 @@ def test_report_text_has_hebrew_and_no_filenames(tmp_path, key):
     pdf = build_report(make_data(), tmp_path, k.fingerprint)
     text = "".join(p.extract_text() for p in pypdf.PdfReader(str(pdf)).pages)
     assert "2026-0418" in text and "ERR_READ_FAILED" in text
+    assert "לוינגר" in text
     assert "dddd dddd" in text and "eeee eeee" in text  # טביעות מלאות
     assert any("֐" <= ch <= "׿" for ch in text)
     assert ".jpg" not in text and "DCIM" not in text

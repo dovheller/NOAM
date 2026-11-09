@@ -33,6 +33,7 @@ ERROR_HE = {
 @dataclass
 class ReportData:
     case_id: str
+    client_name: str             # מודפס בדוח (החלטה: כן). לא נכנס ליומן ה-audit.
     service: str                 # backup | transfer | restore
     operator: str
     station_id: str
@@ -160,6 +161,7 @@ def build_report(data: ReportData, out_dir: Path, signing_fp: str) -> Path:
 
     doc.heading("פרטי סשן")
     doc.row("מספר תיק", data.case_id, mono=True)
+    doc.row("לקוח", data.client_name)
     doc.row("שירות", SERVICE_HE.get(data.service, data.service))
     doc.row("התחלה", _fmt_dt(data.started_at), mono=True)
     doc.row("סיום", _fmt_dt(data.ended_at), mono=True)
