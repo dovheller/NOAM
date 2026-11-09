@@ -32,8 +32,3 @@ class Source(ABC):
 
     @abstractmethod
     def open(self, entry: Entry) -> BinaryIO: ...
-
-
-def scan() -> list[Source]:
-    """מחזיר את המקורות המחוברים כרגע."""
-    raise NotImplementedError("WP2")
