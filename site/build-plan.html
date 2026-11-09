@@ -1,0 +1,357 @@
+<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>מפת הבנייה של NOAM</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: מסלול 30 יום כעמוד שדרה אנכי; כל שלב רצועה, כל חבילת עבודה שורה עם תגית ימים */
+:root{
+  --bg:#eef2f6; --surface:#ffffff; --sunk:#f5f7fa; --fg:#18212c; --muted:#56616e; --line:#d6dee7;
+  --navy:#1f3a5f; --accent:#2f6fb2; --accent-soft:#e3edf8; --ok:#2e7d50; --ok-soft:#e6f2ea; --warn:#9a5b0e; --warn-soft:#fbf0de;
+  --tip-bg:#1f2b3a; --tip-fg:#f2f5f8; --term-line:#2f6fb2;
+  --display:"Heebo",system-ui,sans-serif; --body:"Heebo",system-ui,sans-serif; --mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f151d; --surface:#17202b; --sunk:#121a23; --fg:#e6ecf2; --muted:#9aa7b5; --line:#2a3644;
+  --navy:#9ec3ec; --accent:#7fb2e8; --accent-soft:#1b2c40; --ok:#7fcf9d; --ok-soft:#16291f; --warn:#e7b064; --warn-soft:#2c2214;
+  --tip-bg:#e9eef4; --tip-fg:#14202c; --term-line:#7fb2e8; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f151d; --surface:#17202b; --sunk:#121a23; --fg:#e6ecf2; --muted:#9aa7b5; --line:#2a3644;
+  --navy:#9ec3ec; --accent:#7fb2e8; --accent-soft:#1b2c40; --ok:#7fcf9d; --ok-soft:#16291f; --warn:#e7b064; --warn-soft:#2c2214;
+  --tip-bg:#e9eef4; --tip-fg:#14202c; --term-line:#7fb2e8; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.65;margin:0}
+.wrap{max-width:1040px;margin:0 auto;padding-block:40px 64px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:36px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0;line-height:1.25}
+h1{font-size:clamp(30px,5vw,42px);font-weight:800;color:var(--navy)}
+h2{font-size:24px;font-weight:700}
+h3{font-size:18px;font-weight:700}
+p{margin:0;max-width:68ch}
+.lede{font-size:18px;color:var(--muted)}
+.mono,code{font-family:var(--mono);font-size:.88em;direction:ltr;unicode-bidi:isolate}
+header{display:flex;flex-direction:column;gap:12px}
+.eyebrow{font-size:13px;font-weight:600;letter-spacing:.04em;color:var(--accent)}
+.hint{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:14px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;width:fit-content;max-width:100%}
+
+/* ציר 30 הימים */
+.track{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.track-bar{display:grid;grid-template-columns:4fr 10fr 10fr 6fr;gap:4px;direction:rtl}
+.seg{border-radius:8px;padding:10px 12px;min-width:0;text-decoration:none;color:inherit;display:flex;flex-direction:column;gap:2px}
+.seg b{font-size:15px}
+.seg span{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.seg:nth-child(1){background:var(--accent-soft)}
+.seg:nth-child(2){background:color-mix(in srgb,var(--accent) 22%,var(--surface))}
+.seg:nth-child(3){background:color-mix(in srgb,var(--accent) 34%,var(--surface))}
+.seg:nth-child(4){background:var(--ok-soft)}
+.seg:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.after{font-size:13px;color:var(--muted)}
+
+/* שלבים */
+.stage{display:flex;flex-direction:column;gap:14px;scroll-margin-top:16px}
+.stage-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;border-bottom:2px solid var(--navy);padding-bottom:8px}
+.stage-head .days{font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.stage-head p{flex-basis:100%;color:var(--muted);font-size:15px}
+.wp{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px;display:grid;grid-template-columns:72px minmax(0,1fr);gap:4px 18px}
+.wp-id{grid-row:span 3;display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.wp-id .n{font-family:var(--mono);font-weight:600;font-size:15px;color:var(--navy);direction:ltr}
+.chip{font-size:12px;font-weight:600;padding:2px 9px;border-radius:20px;background:var(--sunk);border:1px solid var(--line);color:var(--muted);white-space:nowrap;font-variant-numeric:tabular-nums}
+.wp h3{margin-bottom:2px}
+.wp .what{color:var(--fg)}
+.done{display:flex;gap:8px;align-items:flex-start;margin-top:8px;background:var(--ok-soft);border-radius:8px;padding:8px 12px;font-size:15px}
+.done b{color:var(--ok);white-space:nowrap}
+.dep{font-size:13px;color:var(--muted);margin-top:6px}
+.flag{border-color:var(--warn);background:linear-gradient(var(--warn-soft),var(--warn-soft)) padding-box}
+.flag-note{font-size:14px;color:var(--warn);font-weight:600;margin-top:6px}
+
+.decide{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px;display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.decide h2{grid-column:1/-1}
+.dcard{background:var(--sunk);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.dcard .rec{font-size:14px;color:var(--ok);font-weight:600}
+
+/* מילון */
+.gloss{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.gloss div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px;font-size:14px}
+.gloss dt{font-weight:700;margin-bottom:2px}
+.gloss dd{margin:0;color:var(--muted)}
+
+/* מונח עם בלון */
+.t{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:help;border-bottom:1.5px dotted var(--term-line);line-height:inherit}
+.t:hover,.t[aria-expanded="true"]{color:var(--accent)}
+.t:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+#tip{position:fixed;z-index:50;max-width:min(320px,calc(100vw - 32px));background:var(--tip-bg);color:var(--tip-fg);border-radius:10px;padding:10px 14px;font-size:14px;line-height:1.55;box-shadow:0 8px 24px rgba(10,20,30,.28);pointer-events:none;opacity:0;transform:translateY(4px);transition:opacity .12s,transform .12s}
+#tip.on{opacity:1;transform:none}
+#tip b{display:block;font-size:13px;margin-bottom:2px;opacity:.8}
+#tip::after{content:"";position:absolute;inset-inline-start:var(--ax,20px);border:7px solid transparent}
+#tip.below::after{top:-14px;border-bottom-color:var(--tip-bg)}
+#tip.above::after{bottom:-14px;border-top-color:var(--tip-bg)}
+@media (prefers-reduced-motion:reduce){#tip{transition:none}}
+@media (max-width:560px){
+  .track-bar{grid-template-columns:1fr 1fr}
+  .wp{grid-template-columns:minmax(0,1fr)}
+  .wp-id{grid-row:auto;flex-direction:row;align-items:center}
+}
+footer{font-size:13px;color:var(--muted)}
+</style>
+
+<div class="wrap" dir="rtl" lang="he">
+<header>
+  <div class="eyebrow">NOAM · מסמך לצוות</div>
+  <h1>מפת הבנייה של NOAM</h1>
+  <p class="lede">איך עמדת הגיבוי וההעברה של נועם נבנית ב-30 יום: ארבעה שלבים ו-11 <button type="button" class="t" data-t="wp">חבילות עבודה</button>, ועוד שתי חבילות לשכבת WhatsApp אחר כך. כל חבילה נמסרת כ-<button type="button" class="t" data-t="pr">Pull Request</button> נפרד, עם קוד שרץ ובדיקות שעוברות.</p>
+  <div class="hint">מילה עם קו מנוקד מתחתיה מסבירה את עצמה: רחפו מעליה, או הקישו עליה בטלפון.</div>
+</header>
+
+<nav class="track" aria-label="ציר 30 הימים">
+  <div class="track-bar">
+    <a class="seg" href="#s1"><b>יסודות</b><span>ימים 1–4</span></a>
+    <a class="seg" href="#s2"><b>הליבה</b><span>ימים 5–14</span></a>
+    <a class="seg" href="#s3"><b>ממשקים</b><span>ימים 15–24</span></a>
+    <a class="seg" href="#s4"><b>מסירה</b><span>ימים 25–30</span></a>
+  </div>
+  <div class="after">אחרי 30 הימים, כשהקיוסק יציב: <a href="#s5">שכבה 2, ארכיון WhatsApp</a>, כשבועיים.</div>
+</nav>
+
+<section class="stage" id="s1">
+  <div class="stage-head"><h2>שלב א׳ · יסודות</h2><span class="days">ימים 1–4</span><p>סוגרים החלטות ובונים את השלד שכל השאר נשען עליו.</p></div>
+
+  <article class="wp flag">
+    <div class="wp-id"><span class="n">WP0</span><span class="chip">יום 1</span></div>
+    <h3>החלטות והקמה</h3>
+    <p class="what">מאשרים את שלוש ההחלטות המבניות, שכל אחת כתובה כ-<button type="button" class="t" data-t="adr">ADR</button>: ממשק ב-<button type="button" class="t" data-t="localweb">ווב מקומי</button>, עמדה על <button type="button" class="t" data-t="ubuntu">Ubuntu LTS</button>, וטאבלט ב-<button type="button" class="t" data-t="lan">רשת סגורה</button>. מקימים סביבת פיתוח, <button type="button" class="t" data-t="precommit">pre-commit</button> ו-<button type="button" class="t" data-t="ci">CI</button>.</p>
+    <div>
+      <div class="done"><b>גמור כש:</b><span>ההחלטות אושרו, וההתקנה, הבדיקות וה-CI רצים נקי.</span></div>
+      <div class="flag-note">חוסם את כל השאר. ממתין להחלטה של דב ונועם.</div>
+    </div>
+  </article>
+
+  <article class="wp">
+    <div class="wp-id"><span class="n">WP1</span><span class="chip">ימים 2–4</span></div>
+    <h3>סשן ויומן ביקורת</h3>
+    <p class="what">מה זה "סשן" בקוד: מספר תיק, לקוח, שירות ושפה, ו<button type="button" class="t" data-t="statemachine">מכונת מצבים</button> שמובילה אותו מפתיחה ועד סגירה. לצדו <button type="button" class="t" data-t="audit">יומן audit</button> שמותר לכתוב אליו ואסור למחוק ממנו.</p>
+    <div>
+      <div class="done"><b>גמור כש:</b><span>מעבר לא חוקי נדחה, והיומן מסרב לקבל כל שדה של תוכן.</span></div>
+      <div class="dep">תלוי ב: WP0</div>
+    </div>
+  </article>
+</section>
+
+<section class="stage" id="s2">
+  <div class="stage-head"><h2>שלב ב׳ · הליבה</h2><span class="days">ימים 5–14</span><p>מה שהעמדה עושה בפועל: קוראת מהטלפון, מעתיקה, מאמתת וחותמת. בלי מסכים עדיין.</p></div>
+
+  <article class="wp flag">
+    <div class="wp-id"><span class="n">WP2</span><span class="chip">ימים 5–8</span></div>
+    <h3>גישה לטלפון</h3>
+    <p class="what">זיהוי הטלפון וקריאת הקבצים דרך <button type="button" class="t" data-t="mtp">MTP</button>, בעזרת <button type="button" class="t" data-t="libmtp">libmtp</button>, מאחורי ממשק אחד שמסתיר את המורכבות. הכל קורה ב<button type="button" class="t" data-t="server">שרת</button>: הדפדפן לא ניגש לטלפון בכלל.</p>
+    <div>
+      <div class="done"><b>גמור כש:</b><span>סריקה של טלפון אמיתי מחזירה ספירה ונפח לפי סוג, וניתוק באמצע מדווח כשגיאה בלי לתקוע.</span></div>
+      <div class="flag-note">החלק הקשה ביותר טכנית. מתחילים בו מוקדם.</div>
+    </div>
+  </article>
+
+  <article class="wp">
+    <div class="wp-id"><span class="n">WP3</span><span class="chip">ימים 8–11</span></div>
+    <h3>העתקה ואימות</h3>
+    <p class="what">כל קובץ מועתק ומקבל טביעת <button type="button" class="t" data-t="sha">SHA-256</button> במקור וביעד, והשתיים מושוות. לפני ההתחלה בודקים מקום פנוי ו<button type="button" class="t" data-t="writetest">כתיבת-ניסיון</button>. קובץ שלא נקרא נרשם כדילוג, והכל נכתב ל<button type="button" class="t" data-t="manifest">מניפסט</button>.</p>
+    <div>
+      <div class="done"><b>גמור כש:</b><span>כל קובץ אומת או נרשם כדילוג, ועצירה והמשך לא משכפלים קבצים.</span></div>
+      <div class="dep">תלוי ב: WP2</div>
+    </div>
+  </article>
+
+  <article class="wp">
+    <div class="wp-id"><span class="n">WP4</span><span class="chip">ימים 9–10</span></div>
+    <h3>יעדים</h3>
+    <p class="what">לאן מעתיקים: דיסק חיצוני, כרטיס SD או תיקייה בענן. בענן יש הבדל חשוב בין "הועתק" לבין <button type="button" class="t" data-t="sync">"סונכרן"</button>.</p>
+    <div>
+      <div class="done"><b>גמור כש:</b><span>יעד ענן לא מדווח "הושלם" לפני שהסנכרון אומת.</span></div>
+      <div class="dep">תלוי ב: WP1</div>
+    </div>
+  </article>
+
+  <article class="wp">
+    <div class="wp-id"><span class="n">WP5</span><span class="chip">ימים 12–14</span></div>
+    <h3>דוח חתום</h3>
+    <p class="what">דוח PDF בעברית מימין לשמאל (<button type="button" class="t" data-t="rtl">RTL</button>) עם כל פרטי הסשן, ו<button type="button" class="t" data-t="sig">חתימה דיגיטלית</button> מסוג <button type="button" class="t" data-t="ecdsa">ECDSA P-256</button>.</p>
+    <div>
+      <div class="done"><b>גמור כש:</b><span>הדוח נפתח, העברית תקינה, והחתימה מאומתת בכלי חיצוני.</span></div>
+      <div class="dep">תלוי ב: WP3</div>
+    </div>
+  </article>
+
+  <article class="wp">
+    <div class="wp-id"><span class="n">WP6</span><span class="chip">רוחבי · 5–14</span></div>
+    <h3>שכבת הפרטיות</h3>
+    <p class="what">מסנן אחד שכל נתון עובר דרכו בדרך למפעיל, ומשאיר רק ספירות, נפחים, סטטוס ו-<button type="button" class="t" data-t="hash">hash</button>. ניסיון לראות תוכן נחסם ונרשם ביומן.</p>
+    <div>
+      <div class="done"><b>גמור כש:</b><span>בדיקה שמזריקה שמות קבצים ונתיבים בכל נקודה מוכיחה שאף אחד מהם לא הגיע למפעיל.</span></div>
+      <div class="dep">רץ במקביל לכל השלב</div>
+    </div>
+  </article>
+</section>
+
+<section class="stage" id="s3">
+  <div class="stage-head"><h2>שלב ג׳ · ממשקים</h2><span class="days">ימים 15–24</span><p>המסכים מהמוקאפ הופכים למסכים אמיתיים שמחוברים לליבה.</p></div>
+
+  <article class="wp">
+    <div class="wp-id"><span class="n">WP7</span><span class="chip">ימים 15–19</span></div>
+    <h3>קונסולת המפעיל</h3>
+    <p class="what">שבעה מסכים: תור סשנים, פתיחה, סטטוס פעיל, סיום, היסטוריה, אבחון והגדרות. הקונסולה מקבלת נתונים רק דרך שכבת הפרטיות, ב-<button type="button" class="t" data-t="api">API</button> של השרת.</p>
+    <div>
+      <div class="done"><b>גמור כש:</b><span>אפשר לנהל סשן שלם מהקונסולה, בלי טרמינל.</span></div>
+      <div class="dep">תלוי ב: WP5, WP6</div>
+    </div>
+  </article>
+
+  <article class="wp">
+    <div class="wp-id"><span class="n">WP8</span><span class="chip">ימים 18–22</span></div>
+    <h3>טאבלט הלקוח</h3>
+    <p class="what">שבעה מסכים, מבחירת שפה ועד סיום, בחמש שפות. זה המקום היחיד שבו מוצג תוכן. הטאבלט נעול על כתובת אחת ב<button type="button" class="t" data-t="kiosk">מצב קיוסק</button>.</p>
+    <div>
+      <div class="done"><b>גמור כש:</b><span>לקוח שאינו טכנולוגי עובר את הזרימה לבד, והטאבלט והקונסולה מסונכרנים בזמן אמת.</span></div>
+      <div class="dep">תלוי ב: WP5, WP6</div>
+    </div>
+  </article>
+
+  <article class="wp">
+    <div class="wp-id"><span class="n">WP9</span><span class="chip">ימים 23–24</span></div>
+    <h3>בדיקה מקצה לקצה</h3>
+    <p class="what">סשנים אמיתיים על החומרה של העמדה: טלפון, טאבלט, העתקה ודוח, ברצף אחד.</p>
+    <div>
+      <div class="done"><b>גמור כש:</b><span>שלושה סשנים רצופים על שלושה טלפונים שונים עוברים בלי שהמתכנת מתערב.</span></div>
+      <div class="dep">תלוי ב: WP7, WP8</div>
+    </div>
+  </article>
+</section>
+
+<section class="stage" id="s4">
+  <div class="stage-head"><h2>שלב ד׳ · מסירה</h2><span class="days">ימים 25–30</span><p>העמדה עמידה לתקלות ומוכנה לעבודה אצל נועם.</p></div>
+
+  <article class="wp">
+    <div class="wp-id"><span class="n">WP10</span><span class="chip">ימים 25–30</span></div>
+    <h3>הקשחה, התקנה ותיעוד</h3>
+    <p class="what">טיפול בתקלות כמו כבל שנותק, דיסק מלא או הפסקת חשמל. בדיקת <button type="button" class="t" data-t="isolation">בידוד בין תיקים</button>, <button type="button" class="t" data-t="image">image</button> מוכן להתקנת העמדה, מדריך מפעיל בעברית, ובדיקת אבטחה.</p>
+    <div>
+      <div class="done"><b>גמור כש:</b><span>נועם מתקין את העמדה מאפס לפי המדריך, ומריץ סשן בלי עזרה.</span></div>
+      <div class="dep">תלוי ב: WP9</div>
+    </div>
+  </article>
+</section>
+
+<section class="stage" id="s5">
+  <div class="stage-head"><h2>שכבה 2 · ארכיון WhatsApp</h2><span class="days">אחרי 30 הימים · כשבועיים</span><p>שירות נפרד על לפטופ ייעודי. הלקוח מקבל ארכיון קריא של הצ׳אטים, לא שחזור לטלפון.</p></div>
+
+  <article class="wp">
+    <div class="wp-id"><span class="n">WP11</span><span class="chip">כשבוע</span></div>
+    <h3>פענוח</h3>
+    <p class="what">שאלות פתיחה, איסוף הקובץ המוצפן (<button type="button" class="t" data-t="crypt15">crypt15</button>), קליטת <button type="button" class="t" data-t="backupkey">מפתח הגיבוי</button>, ופענוח אוטומטי עם <button type="button" class="t" data-t="wacrypt">wa-crypt-tools</button> למסד <button type="button" class="t" data-t="sqlite">SQLite</button> זמני. בסוף, מחיקה מתועדת.</p>
+    <div>
+      <div class="done"><b>גמור כש:</b><span>גיבוי אמיתי מטלפון Android 13 ומעלה מפוענח בלי <button type="button" class="t" data-t="root">root</button>, ואף אדם לא פותח את המסד המפוענח.</span></div>
+      <div class="dep">תלוי ב: WP10</div>
+    </div>
+  </article>
+
+  <article class="wp">
+    <div class="wp-id"><span class="n">WP12</span><span class="chip">כשבוע</span></div>
+    <h3>מנוע הארכיון</h3>
+    <p class="what">ארכיון HTML בעברית עם רשימת שיחות, חיפוש ותמונות מוטמעות, ועותק PDF להדפסה.</p>
+    <div>
+      <div class="done"><b>גמור כש:</b><span>הארכיון נפתח בכל דפדפן, העברית תקינה, והחיפוש עובד.</span></div>
+      <div class="dep">תלוי ב: WP11</div>
+    </div>
+  </article>
+</section>
+
+<section class="decide" aria-labelledby="dh">
+  <h2 id="dh">מה צריך להחליט לפני יום 1</h2>
+  <div class="dcard"><h3>ממשק</h3><p>ווב מקומי או אפליקציית מחשב.</p><span class="rec">המלצה: ווב מקומי, שרת <button type="button" class="t" data-t="fastapi">FastAPI</button></span></div>
+  <div class="dcard"><h3>מערכת הפעלה</h3><p>לינוקס, Windows או macOS לעמדה.</p><span class="rec">המלצה: Ubuntu LTS עם <button type="button" class="t" data-t="luks">LUKS</button></span></div>
+  <div class="dcard"><h3>חיבור הטאבלט</h3><p>רשת סגורה, USB או <button type="button" class="t" data-t="wifidirect">Wi-Fi Direct</button>.</p><span class="rec">המלצה: ראוטר בלי אינטרנט</span></div>
+  <div class="dcard"><h3>מפתח החתימה</h3><p>איפה הוא שמור, ומי מחזיק את סיסמת המנהל.</p><span class="rec">המלצה: שבב <button type="button" class="t" data-t="tpm">TPM</button> של העמדה</span></div>
+  <div class="dcard"><h3>שעון אמין</h3><p>העמדה בלי אינטרנט, אז איך מוכיחים מה השעה.</p><span class="rec">המלצה: <button type="button" class="t" data-t="rtc">RTC</button> ובדיקה יומית מתועדת</span></div>
+  <div class="dcard"><h3>שמירה ומחיקה</h3><p>כמה זמן נשמרים דוחות ויומנים. דורש עורך דין.</p><span class="rec">הצעה: 7 שנים, אחרי <button type="button" class="t" data-t="amend13">תיקון 13</button></span></div>
+</section>
+
+<section class="stage" aria-labelledby="gh">
+  <div class="stage-head"><h2 id="gh">כל המונחים</h2></div>
+  <dl class="gloss" id="gloss"></dl>
+</section>
+
+<footer>המקור: <span class="mono">ROADMAP.md</span>, <span class="mono">docs/adr/</span> ו-<span class="mono">docs/SECURITY.md</span> בריפו <span class="mono">dovheller/NOAM</span>.</footer>
+</div>
+
+<div id="tip" role="tooltip"></div>
+
+<script>
+const G={
+  wp:["חבילת עבודה (WP)","Work Package. יחידת עבודה סגורה עם מטרה, תנאי סיום ותלויות. המתכנת מסיים אחת ועובר לבאה."],
+  pr:["Pull Request","בקשה לצרף קוד חדש לפרויקט ב-GitHub. מישהו עובר על השינוי לפני שהוא נכנס, וכך כל חבילה נבדקת בנפרד."],
+  adr:["ADR","Architecture Decision Record. מסמך קצר שמתעד החלטה מבנית: מה היו האפשרויות, מה נבחר ולמה. כך לא מתווכחים שוב על אותה החלטה."],
+  localweb:["ווב מקומי","הממשק נראה כמו אתר, אבל רץ על המחשב של העמדה עצמה ולא באינטרנט. העמדה והטאבלט פותחים אותו בדפדפן."],
+  ubuntu:["Ubuntu LTS","גרסה נפוצה של מערכת ההפעלה לינוקס. LTS פירושו תמיכה ועדכוני אבטחה לחמש שנים לפחות."],
+  lan:["רשת סגורה","רשת Wi-Fi שמחברת רק את העמדה לטאבלט, דרך ראוטר שאינו מחובר לאינטרנט. שום דבר לא יוצא החוצה."],
+  precommit:["pre-commit","בדיקה אוטומטית שרצה אצל המתכנת לפני שקוד נשמר. כאן היא חוסמת סיסמאות, מפתחות וקובצי לקוח מלהיכנס לריפו בטעות."],
+  ci:["CI","Continuous Integration. שרת של GitHub שמריץ את כל הבדיקות על כל שינוי בקוד, ומסמן אדום אם משהו נשבר."],
+  statemachine:["מכונת מצבים","רשימה סגורה של שלבים, וכללים מי יכול לבוא אחרי מי. למשל: אי אפשר להתחיל העתקה לפני שהלקוח חתם."],
+  audit:["יומן audit","יומן ביקורת: רישום של כל פעולה בסשן, מי ומתי. נרשמים בו רק נתונים טכניים, אף פעם לא תוכן הלקוח."],
+  mtp:["MTP","Media Transfer Protocol. הדרך שבה טלפון אנדרואיד חושף את הקבצים שלו למחשב בכבל. הוא לא מתנהג כמו דיסק רגיל, ולכן צריך קוד מיוחד."],
+  libmtp:["libmtp","ספריית קוד פתוח ותיקה לעבודה עם MTP בלינוקס. היא מה שמאפשר לעמדה לקרוא מהטלפון."],
+  server:["שרת","תוכנה שרצה על מחשב העמדה ועושה את העבודה עצמה: קריאה, העתקה וחתימה. הדפדפן רק מציג את מה שהשרת שולח לו."],
+  sha:["SHA-256","טביעת אצבע דיגיטלית של קובץ: מחרוזת שמשתנה לגמרי אם השתנה אפילו בייט אחד. אם הטביעה במקור וביעד זהה, הקובץ הועתק בשלמות."],
+  writetest:["כתיבת-ניסיון","כתיבה של קובץ קטן ליעד ומחיקתו לפני ההעתקה, כדי לוודא שהדיסק באמת כתיב ולא נכשל באמצע."],
+  manifest:["מניפסט","קובץ שרשום בו כל קובץ שהועתק, עם הגודל, הטביעה והסטטוס שלו. הוא הבסיס לדוח."],
+  sync:["סנכרון ענן","העתקה לתיקיית ענן על המחשב לא אומרת שהקובץ כבר עלה לשרתי הענן. העלייה בפועל נבדקת בנפרד."],
+  rtl:["RTL","Right To Left. כתיבה מימין לשמאל, כמו עברית. דוחות ומסכים צריכים לטפל בזה נכון, אחרת הטקסט מתהפך."],
+  sig:["חתימה דיגיטלית","חותמת מתמטית שמוכיחה שהדוח הופק בעמדה ולא שונה מאז. כל שינוי בדוח שובר את החתימה."],
+  ecdsa:["ECDSA P-256","שיטת חתימה דיגיטלית מקובלת ומאובטחת. חותמים במפתח פרטי שנשאר בעמדה, ומאמתים עם מפתח ציבורי שאפשר לתת לכל אחד."],
+  hash:["hash","שם כללי לטביעת אצבע דיגיטלית כמו SHA-256. מראה שקובץ קיים ושלם, בלי לחשוף את התוכן שלו."],
+  api:["API","הממשק שדרכו המסכים מבקשים נתונים מהשרת. כאן הוא בנוי כך שמסך המפעיל פשוט לא יכול לבקש תוכן."],
+  kiosk:["מצב קיוסק","דפדפן במסך מלא שנעול על כתובת אחת. הלקוח לא יכול לצאת ממנו, לגלוש או לפתוח אפליקציה אחרת."],
+  isolation:["בידוד בין תיקים","שום מידע מסשן של לקוח אחד לא נשאר לסשן הבא: לא בעמדה, לא בטאבלט ולא בזיכרון."],
+  image:["image","עותק מוכן של כל המחשב, עם מערכת ההפעלה וההגדרות. צורבים אותו על עמדה חדשה, והיא מוכנה לעבודה."],
+  crypt15:["crypt15","הפורמט של גיבוי WhatsApp המוצפן מקצה לקצה. אפשר לפתוח אותו רק עם מפתח הגיבוי של הלקוח."],
+  backupkey:["מפתח גיבוי","64 תווים שהלקוח קיבל כשהפעיל גיבוי מוצפן ב-WhatsApp. בלי המפתח אין דרך לפתוח את הגיבוי, וגם אין שירות."],
+  wacrypt:["wa-crypt-tools","כלי קוד פתוח שמפענח גיבויים של WhatsApp כשיש את המפתח. הוא לא עוקף הצפנה."],
+  sqlite:["SQLite","קובץ אחד שמכיל מסד נתונים. בתוכו WhatsApp שומרת את כל ההודעות. כאן הוא זמני ונמחק בסוף."],
+  root:["root","הרשאות מנהל מלאות בטלפון אנדרואיד. דורש פריצה של הטלפון, ולכן השירות לא מסתמך עליו."],
+  fastapi:["FastAPI","ספריית Python לבניית שרתים. מהירה, פשוטה, ומתאימה לשפה שבה כתובים הכלים הקיימים."],
+  luks:["LUKS","הצפנה של כל הדיסק בלינוקס. מי שגונב את הדיסק לא יכול לקרוא ממנו כלום בלי הסיסמה."],
+  wifidirect:["Wi-Fi Direct","חיבור אלחוטי ישיר בין שני מכשירים בלי ראוטר. נוח, אבל פחות יציב לסשן ארוך."],
+  tpm:["TPM","שבב אבטחה בלוח האם של המחשב. מפתח שנשמר בו לא ניתן להעתקה, גם אם מישהו משיג את הדיסק."],
+  rtc:["RTC","שעון חומרה עם סוללה, שממשיך לרוץ גם כשהמחשב כבוי. בלי אינטרנט, הוא מה שמבטיח שהשעה ביומן נכונה."],
+  amend13:["תיקון 13","תיקון לחוק הגנת הפרטיות בישראל, שהחמיר את החובות של מי שמחזיק מידע אישי. עורך דין צריך לבדוק את ההתאמה אליו."]
+};
+const tip=document.getElementById('tip');let cur=null;
+function place(el){
+  const r=el.getBoundingClientRect(),w=tip.offsetWidth,h=tip.offsetHeight,vw=document.documentElement.clientWidth;
+  let left=Math.min(Math.max(16,r.right-w),vw-16-w);left=Math.max(16,left);
+  const below=r.bottom+h+14<window.innerHeight;
+  tip.style.top=(below?r.bottom+10:r.top-h-10)+'px';tip.style.left=left+'px';
+  tip.classList.toggle('below',below);tip.classList.toggle('above',!below);
+  tip.style.setProperty('--ax',Math.min(Math.max(10,(left+w)-(r.left+r.width/2)-7),w-24)+'px');
+}
+function show(el){
+  const g=G[el.dataset.t];if(!g)return;
+  if(cur&&cur!==el)cur.setAttribute('aria-expanded','false');
+  cur=el;el.setAttribute('aria-expanded','true');
+  tip.innerHTML='';const b=document.createElement('b');b.textContent=g[0];tip.append(b,document.createTextNode(g[1]));
+  tip.classList.add('on');place(el);
+}
+function hide(){if(cur)cur.setAttribute('aria-expanded','false');cur=null;tip.classList.remove('on');}
+document.querySelectorAll('.t').forEach(el=>{
+  el.setAttribute('aria-expanded','false');el.setAttribute('aria-describedby','tip');
+  el.addEventListener('mouseenter',()=>show(el));
+  el.addEventListener('mouseleave',()=>{if(!el.matches(':focus'))hide();});
+  el.addEventListener('focus',()=>show(el));
+  el.addEventListener('blur',hide);
+  el.addEventListener('click',e=>{e.stopPropagation();cur===el&&tip.classList.contains('on')?hide():show(el);});
+});
+document.addEventListener('click',hide);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')hide();});
+window.addEventListener('scroll',()=>{if(cur)place(cur);},{passive:true});
+window.addEventListener('resize',()=>{if(cur)place(cur);});
+const gl=document.getElementById('gloss');
+Object.values(G).sort((a,b)=>a[0].localeCompare(b[0],'he')).forEach(([t,d])=>{
+  const w=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');
+  dt.textContent=t;dd.textContent=d;w.append(dt,dd);gl.append(w);
+});
+</script>
+</html>
