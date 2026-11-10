@@ -83,7 +83,7 @@ def test_every_file_verified(sd, target):
     man = run(sd, target, events)
     assert man.verified_count == 4 and man.skipped == []
     for rel, data in FILES.items():
-        assert (target.root / rel).read_bytes() == data
+        assert (target.payload / rel).read_bytes() == data
     shas = {f.idx: f.sha256 for f in man.files}
     for e in sd.walk():
         assert shas[e.idx] == hashlib.sha256(FILES[e.rel_path]).hexdigest()
@@ -96,7 +96,7 @@ def test_read_error_is_skipped_and_copy_continues(sd, target):
     man = run(src, target)
     assert man.verified_count == 3
     assert [s.error for s in man.skipped] == ["ERR_READ_FAILED"]
-    assert not (target.root / "Documents/c.pdf").exists()
+    assert not (target.payload / "Documents/c.pdf").exists()
     assert leftovers(target) == []
 
 
@@ -110,7 +110,7 @@ def test_disconnect_stops_and_leaves_no_partial(sd, target):
     with pytest.raises(DeviceDisconnected):
         run(src, target)
     assert leftovers(target) == []
-    assert not (target.root / "DCIM/Camera/b.mp4").exists()
+    assert not (target.payload / "DCIM/Camera/b.mp4").exists()
 
 
 def test_resume_does_not_duplicate(sd, target):
@@ -130,7 +130,7 @@ def test_resume_does_not_duplicate(sd, target):
 
 def test_resume_recopies_if_target_file_missing(sd, target):
     run(sd, target)
-    (target.root / "loose.txt").unlink()
+    (target.payload / "loose.txt").unlink()
     src = Wrapped(sd)
     man = run(src, target)
     assert man.verified_count == 4 and len(src.calls) == 1
@@ -220,7 +220,7 @@ def test_path_traversal_stays_inside_target(tmp_path, target):
 
     run(Evil(None), target)
     assert not (tmp_path / "escape.txt").exists()
-    assert (target.root / "escape.txt").read_bytes() == b"bad"
+    assert (target.payload / "escape.txt").read_bytes() == b"bad"
 
 
 def test_end_to_end_with_fake_mtp(target):
@@ -230,3 +230,16 @@ def test_end_to_end_with_fake_mtp(target):
     man = run(src, target)
     assert man.verified_count == 1
     assert man.files[0].sha256 == hashlib.sha256(b"P" * 9001).hexdigest()
+
+
+def test_bagit_validates_with_reference_implementation(sd, target):
+    bagit = pytest.importorskip("bagit")
+    run(sd, target)
+    bag = bagit.Bag(str(target.root))
+    bag.validate()  # זורק אם משהו לא תואם
+    assert bag.info["Payload-Oxum"] == f"{sum(len(b) for b in FILES.values())}.{len(FILES)}"
+    # שינוי של בית אחד בקובץ — האימות נכשל
+    p = target.payload / "loose.txt"
+    p.write_bytes(b"HELLO")
+    with pytest.raises(bagit.BagValidationError):
+        bagit.Bag(str(target.root)).validate()

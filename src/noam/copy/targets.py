@@ -13,6 +13,7 @@ from .errors import TargetError
 
 PART_SUFFIX = ".noam-part"
 STATE_DIR = ".noam"
+PAYLOAD_DIR = "data"  # BagIt (RFC 8493): הקבצים עצמם תחת data/
 _BAD_CHARS = re.compile(r'[\\:*?"<>|\x00-\x1f]')  # לא חוקיים ב-exFAT/NTFS
 
 
@@ -63,15 +64,17 @@ class Target(ABC):
 
 
 class LocalTarget(Target):
-    """תיקייה על דיסק מקומי: root/<case>/… . שורש הדיסק מסומן .noam-target (ראו device/registry)."""
+    """תיקייה על דיסק מקומי: root/<case>/ הוא תיק BagIt — data/ לקבצים, .noam/ למצב העמדה.
+    שורש הדיסק מסומן .noam-target (ראו device/registry)."""
 
     CHUNK = 1024 * 1024
 
     def __init__(self, root: Path) -> None:
         self.root = Path(root)
+        self.payload = self.root / PAYLOAD_DIR
 
     def _abs(self, rel: PurePosixPath, part: bool = False) -> Path:
-        p = self.root.joinpath(*rel.parts)
+        p = self.payload.joinpath(*rel.parts)
         return p.with_name(p.name + PART_SUFFIX) if part else p
 
     def free_bytes(self) -> int:

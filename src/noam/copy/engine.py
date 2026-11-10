@@ -131,6 +131,7 @@ def copy_and_verify(
     # סקיפים מהריצה הזו בלבד; קבצים שדולגו בריצה קודמת נוסו שוב.
     manifest.skipped = list(prog.skips)
     _write_outputs(target, manifest, names)
+    _write_bag(target, manifest, names)
     return manifest
 
 
@@ -203,5 +204,18 @@ def _write_outputs(target: Target, manifest: Manifest, names: dict[int, str]) ->
         target.state_path(f"client-files-{case}.json").write_text(
             json.dumps(client, ensure_ascii=False, indent=2), encoding="utf-8"
         )
+    except OSError as e:
+        raise TargetError("ERR_TARGET_WRITE", e.errno) from e
+
+
+def _write_bag(target: Target, manifest: Manifest, names: dict[int, str]) -> None:
+    """BagIt על היעד, אם היעד הוא תיקייה מקומית (ענן — WP4)."""
+    root = getattr(target, "root", None)
+    if root is None:
+        return
+    from .bagit import write_bag
+    try:
+        write_bag(root, [(names[f.idx], f.sha256, f.size) for f in manifest.files],
+                  case_id=manifest.case, manifest_sha256=manifest.sha256())
     except OSError as e:
         raise TargetError("ERR_TARGET_WRITE", e.errno) from e

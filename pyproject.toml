@@ -5,7 +5,8 @@ description = "NOAM — privacy-first backup, transfer and recovery station"
 requires-python = ">=3.11"
 dependencies = [
   "fpdf2>=2.7",
-  "python-bidi>=0.4",
+  "uharfbuzz>=0.39",          # fpdf2 text shaping: עברית + לועזית באותה שורה
+  "pyhanko>=0.25",            # PAdES בתוך ה-PDF
   "pyzipper>=0.3",
   "cryptography>=42",
   "fastapi>=0.110",
@@ -15,7 +16,7 @@ dependencies = [
 [project.optional-dependencies]
 layer2 = ["whatsapp-chat-exporter"]
 consolidate = ["imagehash>=4.3", "filetype>=1.2", "libarchive-c>=5"]
-dev = ["pytest>=8", "ruff>=0.5", "pre-commit>=3.7", "pypdf>=4"]
+dev = ["pytest>=8", "ruff>=0.5", "pre-commit>=3.7", "pypdf>=4", "bagit>=1.8"]
 
 [build-system]
 requires = ["setuptools>=68"]

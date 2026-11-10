@@ -95,7 +95,7 @@ def test_end_to_end_copy(tmp_path):
     src = ADBSource(FakeADB([ADBDevice("R1", "device")], PHONE), "R1")
     man = copy_and_verify(src, list(src.walk()), LocalTarget(tmp_path / "t"), lambda p: None, case_id="c1")
     assert man.verified_count == 4
-    assert (tmp_path / "t/WhatsApp/Media/WhatsApp Images/IMG-20240412-WA0007.jpg").read_bytes() == b"W" * 20
+    assert (tmp_path / "t/data/WhatsApp/Media/WhatsApp Images/IMG-20240412-WA0007.jpg").read_bytes() == b"W" * 20
 
 
 def test_disconnect_mid_copy_stops(tmp_path):

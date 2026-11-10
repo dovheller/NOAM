@@ -1,8 +1,10 @@
 """WP5 — הפקת הדוח החתום. מבנה ב-docs/REPORT_FORMAT.md.
 
-החתימה מנותקת (detached): <report>.pdf.sig (DER) לצד הקובץ. כל שינוי בבית אחד של ה-PDF שובר אותה.
-טביעת המפתח הציבורי מודפסת בדוח, וכל אחד יכול לאמת עם המפתח הציבורי של העמדה:
-  openssl dgst -sha256 -verify station.pub.pem -signature report.pdf.sig report.pdf
+שתי חתימות:
+1. **PAdES בתוך ה-PDF** (pyHanko) — Adobe Reader / Okular מציגים "חתום, לא שונה מאז".
+2. **מנותקת** (<report>.pdf.sig, DER) על הקובץ הסופי — לאימות בלי שום תוכנת PDF:
+     openssl dgst -sha256 -verify station.pub.pem -signature report.pdf.sig report.pdf
+עברית: text shaping של fpdf2 (uharfbuzz + אלגוריתם Bidi של יוניקוד), לא היפוך ידני.
 """
 from __future__ import annotations
 
@@ -11,7 +13,6 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
 
-from bidi import get_display
 from cryptography.hazmat.primitives.asymmetric import ec
 from fpdf import FPDF
 
@@ -52,6 +53,7 @@ class ReportData:
     total_on_device: int | None = None
     revision: int = 1
     aborted_code: str | None = None
+    unavailable: list[tuple[str, str]] = field(default_factory=list)  # (דגם, קוד סיבה) — מכשירים שזוהו ולא נקראו
     extra_notes: list[str] = field(default_factory=list)
 
     @property
@@ -60,7 +62,8 @@ class ReportData:
 
 
 def _he(s: str) -> str:
-    return get_display(s)
+    # ה-shaping של fpdf2 מסדר כיוון בעצמו; הפונקציה נשארת כנקודה אחת לשינוי.
+    return s
 
 
 def _fmt_bytes(n: int) -> str:
@@ -87,13 +90,16 @@ class _Doc(FPDF):
         self.add_font("he", "B", str(FONTS / "DejaVuSans-Bold.ttf"))
         self.add_font("mono", "", str(FONTS / "DejaVuSansMono.ttf"))
         self.set_auto_page_break(True, margin=18)
+        self.set_text_shaping(use_shaping_engine=True, direction="rtl")
         self.set_margins(16, 16, 16)
 
     def footer(self) -> None:
         self.set_y(-12)
         self.set_font("mono", "", 7)
         self.set_text_color(110, 120, 130)
-        self.cell(0, 5, f"{self.report_id} · key {self.fp} · page {self.page_no()}/{{nb}}", align="C")
+        self.set_text_shaping(False)  # שורה לועזית; {nb} לא נתמך עם shaping (fpdf2 #1090)
+        self.cell(0, 5, f"{self.report_id} · key {self.fp} · page {self.page_no()}", align="C")
+        self.set_text_shaping(use_shaping_engine=True, direction="rtl")
 
     # שורת תווית/ערך מימין לשמאל: התווית בצד ימין, הערך משמאלה.
     def row(self, label: str, value: str, mono: bool = False) -> None:
@@ -109,7 +115,9 @@ class _Doc(FPDF):
         self.set_text_color(24, 33, 44)
         if mono:
             self.set_font("mono", "", 8.5)
+            self.set_text_shaping(False)  # מזהים, hash ותאריכים — LTR נקי
             self.cell(w * 0.6, 6.5, value, align="R")
+            self.set_text_shaping(use_shaping_engine=True, direction="rtl")
         else:
             self.set_font("he", "", 9.5)
             self.cell(w * 0.6, 6.5, _he(value), align="R")
@@ -141,7 +149,6 @@ def build_report(data: ReportData, out_dir: Path, signing_fp: str) -> Path:
     """מפיק את ה-PDF. לא חותם — sign() אחר כך, על הבתים הסופיים."""
     m = data.manifest
     doc = _Doc(data.report_id, signing_fp)
-    doc.alias_nb_pages()
     doc.add_page()
 
     # כותרת
@@ -157,7 +164,9 @@ def build_report(data: ReportData, out_dir: Path, signing_fp: str) -> Path:
     title = "דוח סשן חתום" + (" — סשן שבוטל" if data.aborted_code else "")
     doc.cell(0, 9, _he(title), align="R", new_x="LMARGIN", new_y="NEXT")
     doc.set_font("mono", "", 9)
+    doc.set_text_shaping(False)
     doc.cell(0, 5, data.report_id, align="R", new_x="LMARGIN", new_y="NEXT")
+    doc.set_text_shaping(use_shaping_engine=True, direction="rtl")
 
     doc.heading("פרטי סשן")
     doc.row("מספר תיק", data.case_id, mono=True)
@@ -175,6 +184,12 @@ def build_report(data: ReportData, out_dir: Path, signing_fp: str) -> Path:
     doc.row("מזהה", data.device_id, mono=True)
     doc.row("ממשק", data.device_interface.upper(), mono=True)
     doc.para("המכשיר נקרא בלבד. שום קובץ לא נכתב, שונה או נמחק במכשיר.")
+
+    if data.unavailable:
+        doc.heading("מכשירים שזוהו ולא נקראו")
+        doc.para("המכשירים האלה חוברו לעמדה, אבל לא ניתן היה לקרוא מהם. לא הועתק מהם דבר.")
+        for model, code in data.unavailable:
+            doc.row(model, code, mono=True)
 
     doc.heading("יעד")
     doc.row("מדיה", data.target_desc)
@@ -234,11 +249,63 @@ def build_report(data: ReportData, out_dir: Path, signing_fp: str) -> Path:
     return path
 
 
-def sign(pdf_path: Path, key: SigningKey) -> Path:
-    data = Path(pdf_path).read_bytes()
+def sign(pdf_path: Path, key: SigningKey, *, embed: bool = True) -> Path:
+    """חותם: קודם PAdES בתוך ה-PDF (אם יש תעודה לעמדה), אחר כך חתימה מנותקת על הקובץ הסופי."""
+    pdf_path = Path(pdf_path)
+    if embed:
+        _sign_pades(pdf_path, key)
     sig_path = Path(str(pdf_path) + ".sig")
-    sig_path.write_bytes(key.sign(data))
+    sig_path.write_bytes(key.sign(pdf_path.read_bytes()))
     return sig_path
+
+
+def _sign_pades(pdf_path: Path, key: SigningKey) -> None:
+    from pyhanko.pdf_utils.incremental_writer import IncrementalPdfFileWriter
+    from pyhanko.sign import signers
+    from pyhanko.sign.fields import SigSeedSubFilter
+
+    from .keys import cert_path
+
+    if key.path is None or not cert_path(key.path).exists():
+        raise FileNotFoundError("station certificate missing — run generate_key (creates .crt)")
+    signer = signers.SimpleSigner.load(
+        str(key.path), str(cert_path(key.path)),
+        key_passphrase=(key._pw or "").encode(),
+    )
+    if signer is None:
+        raise PermissionError("pyHanko could not load the station key")
+    meta = signers.PdfSignatureMetadata(
+        field_name="NOAM", reason="NOAM session report", location="Jerusalem",
+        subfilter=SigSeedSubFilter.PADES, md_algorithm="sha256",
+    )
+    data = pdf_path.read_bytes()
+    import io
+    out = io.BytesIO()
+    signers.sign_pdf(IncrementalPdfFileWriter(io.BytesIO(data)), meta, signer=signer, output=out)
+    tmp = pdf_path.with_suffix(".pdf.tmp")
+    tmp.write_bytes(out.getvalue())
+    tmp.replace(pdf_path)
+
+
+def verify_embedded(pdf_path: Path, certificate_pem: Path) -> bool:
+    """מאמת את חתימת ה-PAdES מול תעודת העמדה, בלי גישה לרשת (ADR 0003)."""
+    from asn1crypto import pem, x509
+    from pyhanko.pdf_utils.reader import PdfFileReader
+    from pyhanko.sign.validation import validate_pdf_signature
+    from pyhanko_certvalidator import ValidationContext
+
+    _, _, der = pem.unarmor(Path(certificate_pem).read_bytes())
+    cert = x509.Certificate.load(der)
+    vc = ValidationContext(trust_roots=[cert], allow_fetching=False)
+    try:
+        with Path(pdf_path).open("rb") as f:
+            r = PdfFileReader(f)
+            if not r.embedded_signatures:
+                return False
+            st = validate_pdf_signature(r.embedded_signatures[0], vc)
+            return bool(st.intact and st.valid and st.bottom_line)
+    except Exception:  # noqa: BLE001 — קובץ פגום/שונה = לא מאומת, לא קריסה
+        return False
 
 
 def verify(pdf_path: Path, public_key: ec.EllipticCurvePublicKey, sig_path: Path | None = None) -> bool:

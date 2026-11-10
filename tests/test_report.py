@@ -16,6 +16,7 @@ from noam.report import (
     load_public_key,
     sign,
     verify,
+    verify_embedded,
 )
 
 PW = "correct horse battery"
@@ -128,3 +129,35 @@ def test_generate_refuses_overwrite_and_short_passphrase(tmp_path, key):
 def test_fonts_bundled():
     fonts = Path(__import__("noam.report.pdf", fromlist=["FONTS"]).FONTS)
     assert (fonts / "DejaVuSans.ttf").exists() and (fonts / "LICENSE").exists()
+
+
+def test_pades_embedded_signature_valid_and_tamper_evident(tmp_path, key):
+    k, path = key
+    pdf = build_report(make_data(), tmp_path, k.fingerprint)
+    sign(pdf, k)
+    crt = path.with_suffix(".crt")
+    assert verify_embedded(pdf, crt)
+    assert verify(pdf, load_public_key(path.with_suffix(".pub.pem")))  # המנותקת — על הקובץ הסופי
+    b = bytearray(pdf.read_bytes())
+    b[len(b) // 3] ^= 1  # בית אחד בתוכן החתום
+    pdf.write_bytes(bytes(b))
+    assert not verify_embedded(pdf, crt)
+
+
+def test_unavailable_devices_in_report(tmp_path, key):
+    pypdf = pytest.importorskip("pypdf")
+    k, _ = key
+    pdf = build_report(make_data(unavailable=[("Galaxy A12", "ERR_ADB_UNAUTHORIZED")]), tmp_path, k.fingerprint)
+    text = "".join(p.extract_text() for p in pypdf.PdfReader(str(pdf)).pages)
+    assert "ERR_ADB_UNAUTHORIZED" in text and "Galaxy A12" in text
+
+
+def test_hebrew_with_inline_latin_extracts_in_order(tmp_path, key):
+    """text shaping: קוד לועזי בתוך שורה עברית נשאר שלם (הבאג שהיה עם python-bidi)."""
+    import shutil
+    if not shutil.which("pdftotext"):
+        pytest.skip("poppler-utils not installed")
+    k, _ = key
+    pdf = build_report(make_data(), tmp_path, k.fingerprint)
+    text = subprocess.run(["pdftotext", str(pdf), "-"], capture_output=True, text=True, check=True).stdout
+    assert "exFAT" in text and "SSD 1TB" in text
