@@ -1,6 +1,7 @@
 """WP2 — MassStorageSource: כרטיס SD או דיסק שממופה כתיקייה. מומלץ למפות read-only."""
 from __future__ import annotations
 
+import hashlib
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -19,7 +20,9 @@ class MassStorageSource(Source):
         self.label = label
 
     def info(self) -> DeviceInfo:
-        return DeviceInfo(device_id=f"mass-{self.root.name}", model=self.label, interface="mass_storage")
+        # תווית הכרך היא טקסט שהלקוח בחר — לא מציגים אותה; מזהה = טביעה קצרה
+        did = "mass-" + hashlib.sha256(str(self.root).encode()).hexdigest()[:8]
+        return DeviceInfo(device_id=did, model=self.label, interface="mass_storage")
 
     def walk(self) -> Iterator[Entry]:
         if not self.root.is_dir():

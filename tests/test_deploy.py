@@ -26,6 +26,13 @@ def test_service_is_sandboxed_and_networked_only_locally():
 
 def test_client_storage_mounts_read_only():
     unit = (ROOT / "deploy/systemd/noam-automount@.service").read_text()
-    assert "-o ro," in unit and "noexec" in unit
+    assert "blockdev --setro" in unit and "ro,noload" in unit and "noexec" in unit
+    assert unit.index("blockdev --setro") < unit.index("mount -o")
+    assert "BindsTo=dev-%i.device" in unit
     rules = (ROOT / "deploy/udev/99-noam-storage.rules").read_text()
-    assert 'ID_FS_LABEL}!="NOAM-SSD"' in rules
+    assert rules.count('ID_FS_LABEL}!="NOAM-SSD"') == 2
+
+
+def test_kiosk_wait_fails_if_server_never_comes_up():
+    unit = (ROOT / "deploy/systemd/noam-kiosk.service").read_text()
+    assert "done; exit 1'" in unit

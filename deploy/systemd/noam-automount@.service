@@ -1,10 +1,18 @@
 [Unit]
 Description=NOAM: mount client storage %I read-only
 # הופעל ע"י udev (99-noam-storage.rules) לכל מחיצה של כונן נשלף שאינו דיסק היעד.
+# BindsTo: בניתוק הכרטיס — umount אוטומטי, וכרטיס הבא באותו שם (sdb1) יעלה מחדש.
+BindsTo=dev-%i.device
+After=dev-%i.device
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-# עיקרון 2: המקור לא משתנה — ro,noload (בלי replay של journal), noexec, nosuid, nodev
-ExecStart=/bin/sh -c 'mkdir -p /media/noam-src/%I && mount -o ro,noexec,nosuid,nodev /dev/%I /media/noam-src/%I || mount -o ro,noload,noexec,nosuid,nodev /dev/%I /media/noam-src/%I'
-ExecStop=/bin/sh -c 'umount /media/noam-src/%I; rmdir /media/noam-src/%I'
+# עיקרון 2: המקור לא משתנה.
+# 1) blockdev --setro: ההתקן עצמו לקריאה בלבד — גם replay של journal לא יכול לכתוב.
+# 2) ext*: ro,noload (בלי replay). אחר: ro. תמיד noexec,nosuid,nodev.
+ExecStart=/bin/sh -c 'set -e; blockdev --setro /dev/%I; mkdir -p /media/noam-src/%I; \
+  T=$(blkid -o value -s TYPE /dev/%I || true); \
+  case "$T" in ext2|ext3|ext4) O=ro,noload ;; *) O=ro ;; esac; \
+  mount -o "$O",noexec,nosuid,nodev /dev/%I /media/noam-src/%I'
+ExecStop=/bin/sh -c 'umount /media/noam-src/%I || umount -l /media/noam-src/%I; rmdir /media/noam-src/%I || true'

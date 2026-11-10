@@ -56,7 +56,7 @@ def _scan_mass_storage(roots: Iterable[Path] = _MASS_STORAGE_ROOTS, exclude: Ite
             continue
         seen.add(real)
         try:
-            sources.append(MassStorageSource(mount, label=mount.name))
+            sources.append(MassStorageSource(mount, label="כרטיס / דיסק נשלף"))
         except OSError:
             continue
     return sources

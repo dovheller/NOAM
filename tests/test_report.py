@@ -161,3 +161,11 @@ def test_hebrew_with_inline_latin_extracts_in_order(tmp_path, key):
     pdf = build_report(make_data(), tmp_path, k.fingerprint)
     text = subprocess.run(["pdftotext", str(pdf), "-"], capture_output=True, text=True, check=True).stdout
     assert "exFAT" in text and "SSD 1TB" in text
+
+
+def test_pades_rejects_appended_bytes(tmp_path, key):
+    k, path = key
+    pdf = build_report(make_data(), tmp_path, k.fingerprint)
+    sign(pdf, k)
+    pdf.write_bytes(pdf.read_bytes() + b"\n%junk appended after signing\n")
+    assert not verify_embedded(pdf, path.with_suffix(".crt"))

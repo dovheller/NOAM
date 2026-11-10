@@ -146,3 +146,25 @@ def test_i18n_files_complete():
     assert t["en"]["dir"] == "ltr"
     # מפתח בשם של מתודת dict (clear, items…) מוחזר ב-Jinja כמתודה ולא כטקסט — באג שכבר קרה
     assert not {k for k in t["he"] if hasattr(dict, k)}
+
+
+def test_unauthorized_gets_403_before_form_validation(setup):
+    _st, cfg, app = setup
+    cfg.operator_hosts = ["127.0.0.1"]
+    with TestClient(app) as c:
+        assert c.post("/op/session").status_code == 403  # בלי טופס — עדיין 403, לא 422
+
+
+def test_cross_origin_post_refused(setup):
+    _st, _cfg, app = setup
+    with TestClient(app) as c:
+        assert c.post("/op/tab/queue", headers={"origin": "http://evil.example"}).status_code == 403
+        assert c.post("/op/tab/queue", headers={"origin": "http://testserver"}).status_code == 200
+
+
+def test_tablet_hosts_accept_cidr(setup):
+    _st, cfg, app = setup
+    cfg.operator_hosts = ["127.0.0.1"]
+    cfg.tablet_hosts = ["10.77.0.0/24"]
+    with TestClient(app) as c:  # "testclient" אינו כתובת ברשת
+        assert c.get("/client").status_code == 403

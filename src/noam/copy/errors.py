@@ -19,3 +19,7 @@ class InsufficientSpace(TargetError):
     def __init__(self, needed: int, free: int) -> None:
         super().__init__("ERR_TARGET_SPACE")
         self.needed, self.free = needed, free
+
+
+class CopyCancelled(CopyError):
+    """המפעיל ביטל באמצע. ההעתקה נעצרה בין קבצים או בין חתיכות."""

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import base64
+import ipaddress
 import logging
 import os
 import re
@@ -20,8 +21,10 @@ from contextlib import asynccontextmanager, suppress
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 from fastapi import (
+    Depends,
     FastAPI,
     Form,
     HTTPException,
@@ -153,7 +156,7 @@ class NoamApp:
             snap = self.station.operator_snapshot()
         except PrivacyViolation:
             log.error("operator snapshot blocked by privacy layer")
-            snap = {"tab": "queue", "session": None, "history": [], "shell": [], "audit_tail": [],
+            snap = {"tab": "active", "session": self._minimal_session(), "history": [], "shell": [], "audit_tail": [],
                     "station": {"name": self.station.cfg.display_name, "id": self.station.cfg.station_id,
                                 "operator": "", "target": "", "languages": [], "address": "", "phone": ""},
                     "signing": {"unlocked": False, "fingerprint": None}, "target_free": None}
@@ -161,6 +164,18 @@ class NoamApp:
         return {"s": snap, "blocked": False, "checks": self.diag_checks(snap),
                 "settings_open": time.monotonic() < self.settings_until,
                 "next_case": self._next_case(snap)}
+
+    def _minimal_session(self) -> dict | None:
+        """כשהמטען המלא נחסם: רק מזהה, מצב ושם — כדי שהמפעיל יוכל לבטל, להפיק דוח ולסגור."""
+        run = self.station.current
+        if run is None:
+            return None
+        s = run.session
+        return {"case_id": s.case_id, "client_name": s.client_name, "state": s.state.value,
+                "service": s.service.value, "language": s.language, "abort_code": s.abort_code,
+                "error_code": "ERR_PRIVACY_BLOCKED", "busy": run.busy, "progress": None, "devices": [],
+                "index": None, "selected": None, "unparsed": 0, "report": None, "manifest_sha256": None,
+                "language_chosen": run.language_chosen}
 
     def operator_page(self) -> str:
         return self.env.get_template("operator.html").render(**self._op_ctx())
@@ -268,11 +283,37 @@ def create_app(station: Station, *, poll_interval: float = 2.0) -> FastAPI:
     app.state.noam = na
     app.mount("/static", StaticFiles(directory=HERE / "static"), name="static")
 
+    def _in(host: str | None, allowed: list[str]) -> bool:
+        if host is None:
+            return False
+        if host in allowed:
+            return True
+        try:
+            ip = ipaddress.ip_address(host)
+        except ValueError:
+            return False
+        for a in allowed:
+            try:
+                if ip in ipaddress.ip_network(a, strict=False):
+                    return True
+            except ValueError:
+                continue
+        return False
+
     def is_operator(host: str | None) -> bool:
-        return host in cfg.operator_hosts
+        return _in(host, cfg.operator_hosts)
 
     def is_tablet(host: str | None) -> bool:
-        return not cfg.tablet_hosts or host in cfg.tablet_hosts or host in cfg.operator_hosts
+        return not cfg.tablet_hosts or _in(host, cfg.tablet_hosts) or is_operator(host)
+
+    @app.middleware("http")
+    async def same_origin(request: Request, call_next):
+        # CSRF: דף מאתר אחר (אם איכשהו נפתח בדפדפן העמדה) לא יכול לשלוח פעולות
+        if request.method == "POST":
+            origin = request.headers.get("origin")
+            if origin and urlparse(origin).netloc != request.headers.get("host"):
+                return Response(status_code=403)
+        return await call_next(request)
 
     def need_op(req: Request) -> None:
         if not is_operator(req.client.host if req.client else None):
@@ -281,6 +322,9 @@ def create_app(station: Station, *, poll_interval: float = 2.0) -> FastAPI:
     def need_cl(req: Request) -> None:
         if not is_tablet(req.client.host if req.client else None):
             raise HTTPException(403)
+
+    OP = [Depends(need_op)]  # רץ לפני אימות הטופס: 403 ולא 422
+    CL = [Depends(need_cl)]
 
     async def act(fn, *args, client: bool = False, **kw) -> Response:
         try:
@@ -336,12 +380,12 @@ def create_app(station: Station, *, poll_interval: float = 2.0) -> FastAPI:
             na.hub.client.discard(ws)
 
     # ------------------------------------------------------------ operator actions
-    @app.post("/op/tab/{tab}")
+    @app.post("/op/tab/{tab}", dependencies=OP)
     async def op_tab(tab: str, req: Request):
         need_op(req)
         return await act(station.set_tab, tab)
 
-    @app.post("/op/session")
+    @app.post("/op/session", dependencies=OP)
     async def op_session(req: Request, case_id: str = Form(...), client_name: str = Form(...),
                          phone: str = Form(""), language: str = Form("he"), service: str = Form("transfer")):
         need_op(req)
@@ -350,37 +394,37 @@ def create_app(station: Station, *, poll_interval: float = 2.0) -> FastAPI:
         return await act(station.open_session, case_id=case_id, client_name=client_name, phone=phone,
                          language=language, service=service)
 
-    @app.post("/op/abort")
+    @app.post("/op/abort", dependencies=OP)
     async def op_abort(req: Request):
         need_op(req)
         return await act(station.abort)
 
-    @app.post("/op/scan")
+    @app.post("/op/scan", dependencies=OP)
     async def op_scan(req: Request):
         need_op(req)
         return await act(station.poll_devices)
 
-    @app.post("/op/report")
+    @app.post("/op/report", dependencies=OP)
     async def op_report(req: Request):
         need_op(req)
         return await act(station.make_report)
 
-    @app.post("/op/close")
+    @app.post("/op/close", dependencies=OP)
     async def op_close(req: Request):
         need_op(req)
         return await act(station.close)
 
-    @app.post("/op/shell")
+    @app.post("/op/shell", dependencies=OP)
     async def op_shell(req: Request, cmd: str = Form("")):
         need_op(req)
         return await act(station.shell, cmd)
 
-    @app.post("/op/unlock")
+    @app.post("/op/unlock", dependencies=OP)
     async def op_unlock(req: Request, passphrase: str = Form("")):
         need_op(req)
         return await act(station.unlock_signing, passphrase)
 
-    @app.post("/op/settings/unlock")
+    @app.post("/op/settings/unlock", dependencies=OP)
     async def op_settings_unlock(req: Request, pin: str = Form("")):
         need_op(req)
         if not cfg.operator_pin or pin != cfg.operator_pin:
@@ -389,14 +433,14 @@ def create_app(station: Station, *, poll_interval: float = 2.0) -> FastAPI:
         na.hub.poke()
         return _clear_toast()
 
-    @app.post("/op/settings/lock")
+    @app.post("/op/settings/lock", dependencies=OP)
     async def op_settings_lock(req: Request):
         need_op(req)
         na.settings_until = 0
         na.hub.poke()
         return _clear_toast()
 
-    @app.get("/op/report/{name}")
+    @app.get("/op/report/{name}", dependencies=OP)
     async def op_report_file(name: str, req: Request):
         need_op(req)
         if not REPORT_NAME.match(name):
@@ -407,41 +451,41 @@ def create_app(station: Station, *, poll_interval: float = 2.0) -> FastAPI:
         return FileResponse(p, media_type="application/pdf")
 
     # ------------------------------------------------------------ client actions
-    @app.post("/cl/lang/{code}")
+    @app.post("/cl/lang/{code}", dependencies=CL)
     async def cl_lang(code: str, req: Request):
         need_cl(req)
         return await act(station.choose_language, code, client=True)
 
-    @app.post("/cl/source/{idx}")
+    @app.post("/cl/source/{idx}", dependencies=CL)
     async def cl_source(idx: int, req: Request):
         need_cl(req)
         return await act(station.choose_source, idx, client=True)
 
-    @app.post("/cl/toggle/{gid}")
+    @app.post("/cl/toggle/{gid}", dependencies=CL)
     async def cl_toggle(gid: str, req: Request):
         need_cl(req)
         cur = set(station.client_snapshot()["selected_groups"])
         cur ^= {gid}
         return await act(station.set_selection, sorted(cur), client=True)
 
-    @app.post("/cl/select")
+    @app.post("/cl/select", dependencies=CL)
     async def cl_select(req: Request, mode: str = Form("all")):
         need_cl(req)
         snap = station.client_snapshot()
         groups = [g["id"] for g in (snap["browse"] or {}).get("groups", [])] if mode == "all" else []
         return await act(station.set_selection, groups, client=True)
 
-    @app.post("/cl/confirm")
+    @app.post("/cl/confirm", dependencies=CL)
     async def cl_confirm(req: Request):
         need_cl(req)
         return await act(station.confirm_selection, client=True)
 
-    @app.post("/cl/back")
+    @app.post("/cl/back", dependencies=CL)
     async def cl_back(req: Request):
         need_cl(req)
         return await act(station.back_to_selection, client=True)
 
-    @app.post("/cl/consent")
+    @app.post("/cl/consent", dependencies=CL)
     async def cl_consent(req: Request, signature: str = Form("")):
         need_cl(req)
         prefix = "data:image/png;base64,"

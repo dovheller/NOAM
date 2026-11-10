@@ -14,8 +14,10 @@
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import logging
+import re
 import shutil
 import threading
 from collections.abc import Callable
@@ -25,7 +27,7 @@ from pathlib import Path
 from typing import Any
 
 from noam import privacy
-from noam.copy import LocalTarget, Progress, TargetError, copy_and_verify
+from noam.copy import CopyCancelled, LocalTarget, Progress, TargetError, copy_and_verify
 from noam.copy.manifest import Manifest
 from noam.device import DeviceDisconnected, Source, UnavailableSource
 from noam.device import scan as device_scan
@@ -39,6 +41,9 @@ from .config import StationConfig
 log = logging.getLogger(__name__)
 
 ScanFn = Callable[..., list[Source]]
+CASE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9-]{0,39}$")
+SHELL_COMMANDS = frozenset({"help", "whoami", "status", "scan", "report", "close", "abort", "clear"})
+MIN_INK_PIXELS = 150
 
 
 class StationError(RuntimeError):
@@ -69,6 +74,7 @@ class CaseRun:
     error_code: str | None = None
     unparsed: int = 0
     ended_at: datetime | None = None
+    cancel: threading.Event = field(default_factory=threading.Event)
 
     @property
     def source(self) -> Source | None:
@@ -139,7 +145,7 @@ class Station:
             if self.current and self.current.session.state not in (State.CLOSED,):
                 raise StationError("ERR_SESSION_ACTIVE")
             case_id = case_id.strip()
-            if not case_id or any(c in case_id for c in "/\\. ") or len(case_id) > 40:
+            if not CASE_ID.fullmatch(case_id):  # אותו תחביר כמו שם קובץ הדוח
                 raise StationError("ERR_BAD_CASE_ID")
             if (self.cfg.audit_dir / f"{case_id}.jsonl").exists():
                 raise StationError("ERR_CASE_EXISTS")
@@ -154,6 +160,7 @@ class Station:
                                    target=LocalTarget(self.cfg.target_root / case_id),
                                    started_at=datetime.now(UTC))
             self.operator_tab = "active"
+            self.shell_lines = []
         self._notify()
 
     def abort(self, code: str = "ERR_OPERATOR_CANCELLED") -> None:
@@ -169,6 +176,7 @@ class Station:
     def _abort_locked(self, run: CaseRun, code: str) -> None:
         if run.session.state in (State.ABORTED, State.REPORTED, State.CLOSED):
             return
+        run.cancel.set()  # thread ההעתקה בודק את הדגל בין קבצים ובין חתיכות
         run.session.abort(code)
         run.error_code = code
         run.ended_at = datetime.now(UTC)
@@ -228,12 +236,18 @@ class Station:
                 except Exception:
                     log.exception("source close failed")
             m = run.manifest
+            if run.session.abort_code:
+                status = "aborted"
+            elif m is None or m.verified_count == 0 or m.skipped:
+                status = "partial"
+            else:
+                status = "ok"
             entry = {
                 "date": datetime.now(UTC).astimezone().strftime("%Y-%m-%d"),
                 "case_id": run.session.case_id, "client_name": run.session.client_name,
                 "service": run.session.service.value,
                 "verified": m.verified_count if m else 0, "skipped": len(m.skipped) if m else 0,
-                "status": "aborted" if run.session.abort_code else "ok",
+                "status": status,
                 "abort_code": run.session.abort_code,
                 "report": run.report_path.name if run.report_path else None,
             }
@@ -242,6 +256,7 @@ class Station:
             run.audit.record("session_close", session_id=run.session.session_id, hash=run.audit.seal())
             self.current = None
             self.operator_tab = "queue"
+            self.shell_lines = []
         self._notify()
 
     def unlock_signing(self, passphrase: str) -> None:
@@ -347,7 +362,7 @@ class Station:
 
     def set_selection(self, groups: list[str]) -> None:
         with self._lock:
-            run = self._require(State.INDEXED, State.CLIENT_SELECTED)
+            run = self._require(State.INDEXED)  # אחרי אישור הבחירה — רק דרך "חזרה לבחירה"
             known = {e.group for e in run.entries}
             run.selected_groups = set(groups) & known
         self._notify()
@@ -371,8 +386,7 @@ class Station:
 
     def sign_consent(self, signature_png: bytes) -> None:
         """חתימת הלקוח: התמונה נשמרת על מדיית הלקוח, הטביעה ביומן ובדוח. ההעתקה מתחילה מיד."""
-        if not signature_png.startswith(b"\x89PNG") or len(signature_png) < 200:
-            raise StationError("ERR_SIGNATURE_EMPTY")
+        _check_signature(signature_png)
         with self._lock:
             run = self._require(State.CLIENT_SELECTED)
             sha = hashlib.sha256(signature_png).hexdigest()
@@ -397,35 +411,38 @@ class Station:
                 run.progress = p
             self._notify()
 
+        def stopped(e: BaseException, code: str) -> None:
+            with self._lock:
+                run.busy = None
+                run.manifest = getattr(e, "partial_manifest", None)  # מה שכבר אומת נכנס לדוח החלקי
+                self._abort_locked(run, run.session.abort_code or code)
+
         try:
             src = run.source
             assert src is not None
             manifest = copy_and_verify(src, run.selected_entries(), run.target, on_progress,
-                                       case_id=run.session.case_id)
+                                       case_id=run.session.case_id, should_stop=run.cancel.is_set)
             with self._lock:
                 run.manifest = manifest
                 run.busy = None
-                run.ended_at = datetime.now(UTC)
-                run.audit.record("copy_verified", session_id=run.session.session_id,
-                                 count=manifest.verified_count, size_bytes=manifest.bytes_verified,
-                                 hash=manifest.sha256())
-                if manifest.skipped:
-                    run.audit.record("copy_skipped", session_id=run.session.session_id,
-                                     count=len(manifest.skipped))
-                self._advance(run, State.VERIFIED)
-        except DeviceDisconnected:
-            with self._lock:
-                run.busy = None
-                self._abort_locked(run, "ERR_DEVICE_DISCONNECTED")
+                if run.session.state is State.COPYING:  # בוטל ממש בסוף? נשאר "בוטל", עם המניפסט המלא
+                    run.ended_at = datetime.now(UTC)
+                    run.audit.record("copy_verified", session_id=run.session.session_id,
+                                     count=manifest.verified_count, size_bytes=manifest.bytes_verified,
+                                     hash=manifest.sha256())
+                    if manifest.skipped:
+                        run.audit.record("copy_skipped", session_id=run.session.session_id,
+                                         count=len(manifest.skipped))
+                    self._advance(run, State.VERIFIED)
+        except CopyCancelled as e:
+            stopped(e, "ERR_OPERATOR_CANCELLED")
+        except DeviceDisconnected as e:
+            stopped(e, "ERR_DEVICE_DISCONNECTED")
         except TargetError as e:
-            with self._lock:
-                run.busy = None
-                self._abort_locked(run, e.code)
-        except Exception:
+            stopped(e, e.code)
+        except Exception as e:
             log.exception("copy failed")
-            with self._lock:
-                run.busy = None
-                self._abort_locked(run, "ERR_COPY_FAILED")
+            stopped(e, "ERR_COPY_FAILED")
         self._notify()
 
     # ------------------------------------------------------------------ noam shell
@@ -443,6 +460,16 @@ class Station:
     def shell(self, command: str) -> None:
         cmd = command.strip()[:200]
         out: list[tuple[str, str]] = []
+        first = cmd.split()[0] if cmd else ""
+        if cmd and first not in SHELL_COMMANDS and not privacy.is_blocked(cmd):
+            # פקודה לא מוכרת: לא מציגים ולא שומרים את מה שהוקלד (עלול להיות נתיב או שם)
+            with self._lock:
+                if self.current:
+                    self.current.audit.record("unknown_command", session_id=self.current.session.session_id,
+                                              status="rejected")
+                self.shell_lines = (self.shell_lines + [("cmd", "?"), ("err", "פקודה לא מוכרת · help")])[-200:]
+            self._notify()
+            return
         if privacy.is_blocked(cmd):
             out.append(("err", "✕ נחסם: פקודות תוכן אינן זמינות. הניסיון נרשם ביומן."))
             with self._lock:
@@ -520,6 +547,8 @@ class Station:
             secrets: set[str] = set()
             # שמות קובצי הדוח של העמדה עצמה (NOAM-<תיק>-R<n>.pdf) — לא תוכן של לקוח
             allowed: set[str] = {h["report"] for h in snap["history"] if h.get("report")}
+            allowed |= {self.cfg.operator_name, self.cfg.display_name, self.cfg.station_id, self.cfg.target_label,
+                        self.cfg.address, self.cfg.phone}
             allowed |= {h["client_name"] for h in snap["history"] if h.get("client_name")}
             if run:
                 s = run.session
@@ -619,3 +648,22 @@ def _audit_tail(path: Path, n: int = 12) -> list[dict]:
         out.append({k: e[k] for k in ("ts", "event", "to_state", "count", "size_bytes", "error_code", "status")
                     if k in e})
     return out
+
+
+def _check_signature(data: bytes) -> None:
+    """PNG אמיתי, בממדים סבירים, עם מספיק "דיו" — לא תמונה ריקה ולא קובץ מזויף."""
+    from PIL import Image, UnidentifiedImageError
+
+    if not data.startswith(b"\x89PNG") or len(data) > 1_500_000:
+        raise StationError("ERR_SIGNATURE_EMPTY")
+    try:
+        im = Image.open(io.BytesIO(data))
+        if im.width > 4000 or im.height > 2000:
+            raise StationError("ERR_SIGNATURE_EMPTY")
+        im.load()
+    except (UnidentifiedImageError, OSError, ValueError, SyntaxError) as e:
+        raise StationError("ERR_SIGNATURE_EMPTY") from e
+    rgba = im.convert("RGBA")
+    ink = sum(1 for r, g, b, a in rgba.getdata() if a > 64 and (r + g + b) < 600)
+    if ink < MIN_INK_PIXELS:
+        raise StationError("ERR_SIGNATURE_EMPTY")

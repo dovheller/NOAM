@@ -27,6 +27,16 @@ CONTENT_PATTERNS = (
 )
 _STORAGE_PREFIX = re.compile(r"^s[0-9a-f]{5,}$")  # MTP: מזהה האחסון שמוסיף device/mtp.py
 CATEGORIES = ("images", "video", "docs", "other")
+# מילים שהקוד עצמו מכניס כערכים (מצבים, אירועים, סוגים). תיקייה בשם כזה לא מלמדת כלום,
+# ולכן לא נחסם עליה — אחרת תיקייה בשם "verified" או "other" נועלת את הקונסולה.
+SAFE_VOCAB = frozenset({
+    *CATEGORIES, "open", "device_detected", "target_checked", "indexed", "client_selected", "consent_signed",
+    "copying", "verified", "reported", "closed", "aborted", "backup", "transfer", "restore", "mtp", "adb",
+    "mass_storage", "ok", "partial", "rejected", "blocked", "index", "copy", "state", "language", "session_open",
+    "session_close", "target_check", "copy_verified",
+    "copy_skipped", "report_signed", "abort", "unknown_command", "blocked_command", "he", "yi", "en", "ru", "fr",
+    "android", "help", "status", "scan", "report", "close", "whoami", "clear",
+})
 
 
 class PrivacyViolation(RuntimeError):
@@ -104,21 +114,25 @@ def is_blocked(command: str) -> bool:
 # בדיקת דליפה
 
 def secrets_from_entries(entries: Iterable[Entry], min_len: int = 3) -> set[str]:
-    """כל מקטע נתיב (תיקייה או שם קובץ) של הסשן — מה שאסור שיופיע אצל המפעיל."""
+    """כל מקטע נתיב (תיקייה או שם קובץ) של הסשן — מה שאסור שיופיע אצל המפעיל.
+    מספרים בלבד (שנה, 01) לא נחשבים: הם לא מזהים, ומופיעים בכל חותמת זמן."""
     out: set[str] = set()
     for e in entries:
         for part in e.rel_path.split("/"):
-            if len(part) >= min_len and not _STORAGE_PREFIX.match(part):
+            if (len(part) >= min_len and not _STORAGE_PREFIX.match(part) and not part.isdigit()
+                    and part.lower() not in SAFE_VOCAB):
                 out.add(part.lower())
     return out
 
 
-def _walk_strings(obj: Any) -> Iterable[str]:
+def _walk_strings(obj: Any, keys: bool = False) -> Iterable[str]:
+    """ערכי המחרוזות במטען. מפתחות dict נקבעים בקוד (לא מגיעים מהמכשיר) — לא נסרקים."""
     if isinstance(obj, str):
         yield obj
     elif isinstance(obj, dict):
         for k, v in obj.items():
-            yield str(k)
+            if keys:
+                yield str(k)
             yield from _walk_strings(v)
     elif isinstance(obj, (list, tuple, set)):
         for v in obj:
@@ -128,8 +142,11 @@ def _walk_strings(obj: Any) -> Iterable[str]:
 def assert_operator_safe(payload: Any, secrets: Iterable[str] = (), allowed_values: Iterable[str] = ()) -> Any:
     """זורק PrivacyViolation אם מחרוזת כלשהי במטען מכילה מקטע נתיב של הלקוח או תבנית תוכן.
     מחזיר את המטען כמו שהוא אם הוא נקי — לשימוש בשרשור: return assert_operator_safe(build())."""
-    secret_list = [s for s in secrets if s]
     allowed = {a for a in allowed_values if a}
+    allowed_low = {a.lower() for a in allowed}
+    # מקטע שזהה לטקסט של העמדה עצמה (שם המפעיל, שם העמדה) לא מלמד כלום — לא חוסמים עליו
+    patterns = [re.compile(r"(?<!\w)" + re.escape(sec) + r"(?!\w)")
+                for sec in secrets if sec and sec not in allowed_low]
     for s in _walk_strings(payload):
         if s in allowed:  # ערכים שהמפעיל עצמו הקליד (שם הלקוח) — מותרים גם אם שם תיקייה דומה
             continue
@@ -137,7 +154,7 @@ def assert_operator_safe(payload: Any, secrets: Iterable[str] = (), allowed_valu
         for p in CONTENT_PATTERNS:
             if p.lower() in low:
                 raise PrivacyViolation("operator payload contains a content pattern")
-        for sec in secret_list:
-            if sec in low:
+        for pat in patterns:  # מילה שלמה: "doc" לא נתפס בתוך "docs"
+            if pat.search(low):
                 raise PrivacyViolation("operator payload contains a client path segment")
     return payload

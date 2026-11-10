@@ -22,7 +22,7 @@ from pathlib import PurePosixPath
 from noam.device.base import Entry, Source
 from noam.device.errors import DeviceDisconnected, DeviceError
 
-from .errors import InsufficientSpace, TargetError
+from .errors import CopyCancelled, InsufficientSpace, TargetError
 from .manifest import FileRecord, Manifest, SkipRecord
 from .targets import Target, safe_relpath
 
@@ -47,11 +47,19 @@ class Progress:
 
 
 class _HashingWriter:
-    def __init__(self, fh, on_bytes: Callable[[int], None]) -> None:
+    def __init__(self, fh, on_bytes: Callable[[int], None], should_stop: Callable[[], bool]) -> None:
         self.fh, self.h, self.n, self.on_bytes = fh, hashlib.sha256(), 0, on_bytes
+        self.should_stop = should_stop
 
     def __call__(self, chunk: bytes) -> None:
-        self.fh.write(chunk)
+        if self.should_stop():
+            raise CopyCancelled()
+        try:
+            self.fh.write(chunk)
+        except OSError as err:
+            # כשל ביעד חייב להגיע כ-TargetError: שכבת המכשיר תופסת OSError ועלולה לרשום "המכשיר לא החזיר"
+            code = "ERR_TARGET_SPACE" if err.errno == errno_mod.ENOSPC else "ERR_TARGET_WRITE"
+            raise TargetError(code, err.errno) from err
         self.h.update(chunk)
         self.n += len(chunk)
         self.on_bytes(len(chunk))
@@ -86,20 +94,23 @@ def copy_and_verify(
     on_progress: Callable[[Progress], None],
     *,
     case_id: str,
+    should_stop: Callable[[], bool] = lambda: False,
 ) -> Manifest:
     """מעתיק ומאמת כל קובץ. מחזיר מניפסט וכותב אותו (ואת רשימת השמות ללקוח) ליעד.
-    זורק DeviceDisconnected / TargetError — הסשן נעצר; קריאה חוזרת ממשיכה מאותה נקודה."""
+    זורק DeviceDisconnected / TargetError / CopyCancelled — הסשן נעצר. לכל חריגה מוצמד
+    `partial_manifest` עם מה שכבר אומת, ומניפסט חלקי נכתב ליעד. קריאה חוזרת ממשיכה מאותה נקודה."""
     entries = list(entries)
     journal = _load_journal(target)
     manifest = Manifest(case=case_id, source_device=source.info().device_id)
-    names: dict[int, str] = {}
+    names = _unique_names(entries)
 
     pending = []
     for e in entries:
-        rel = safe_relpath(e.rel_path)
-        names[e.idx] = rel.as_posix()
+        rel = PurePosixPath(names[e.idx])
         rec = journal.get(e.idx)
-        if rec and rec.get("size") == e.size and rec.get("path") == rel.as_posix() and target.exists(rel):
+        if (rec and rec.get("size") == e.size and rec.get("path") == rel.as_posix() and target.exists(rel)
+                and _rehash(target, rel) == rec.get("sha256")):
+            # המשך: לא סומכים על היומן לבד — הקובץ ביעד נקרא שוב ומושווה
             manifest.files.append(FileRecord(e.idx, e.group, e.category, e.size, rec["sha256"], "verified"))
         else:
             pending.append((e, rel))
@@ -119,20 +130,62 @@ def copy_and_verify(
     target.write_test()
     on_progress(prog)
 
-    for e, rel in pending:
-        sha = _copy_one(source, target, e, rel, prog, on_progress)
-        if sha is None:
-            continue
-        _append_journal(target, {"idx": e.idx, "path": rel.as_posix(), "size": e.size, "sha256": sha})
-        manifest.files.append(FileRecord(e.idx, e.group, e.category, e.size, sha, "verified"))
-        prog.verified += 1
-        on_progress(prog)
+    try:
+        for e, rel in pending:
+            if should_stop():
+                raise CopyCancelled()
+            sha = _copy_one(source, target, e, rel, prog, on_progress, should_stop)
+            if sha is None:
+                continue
+            _append_journal(target, {"idx": e.idx, "path": rel.as_posix(), "size": e.size, "sha256": sha})
+            manifest.files.append(FileRecord(e.idx, e.group, e.category, e.size, sha, "verified"))
+            prog.verified += 1
+            on_progress(prog)
+    except (DeviceDisconnected, TargetError, CopyCancelled) as stop:
+        manifest.skipped = list(prog.skips)
+        stop.partial_manifest = manifest  # type: ignore[attr-defined]
+        if not isinstance(stop, TargetError):  # יעד שבור — לא מנסים לכתוב אליו עוד
+            try:
+                _write_outputs(target, manifest, names)
+                _write_bag(target, manifest, names)
+            except TargetError:
+                pass
+        raise
 
     # סקיפים מהריצה הזו בלבד; קבצים שדולגו בריצה קודמת נוסו שוב.
     manifest.skipped = list(prog.skips)
     _write_outputs(target, manifest, names)
     _write_bag(target, manifest, names)
     return manifest
+
+
+def _unique_names(entries: list[Entry]) -> dict[int, str]:
+    """נתיב יעד לכל קובץ, בלי התנגשויות. safe_relpath יכול למפות שני שמות לאותו נתיב
+    (a:b ו-a_b, 'x.' ו-'x'), ו-exFAT לא מבחין באותיות גדולות/קטנות. התנגשות → סיומת ~idx.
+    דטרמיניסטי (לפי idx), כך שהמשך אחרי עצירה מקבל את אותם שמות."""
+    names: dict[int, str] = {}
+    taken: set[str] = set()
+    for e in sorted(entries, key=lambda x: x.idx):
+        rel = safe_relpath(e.rel_path)
+        cand = rel
+        if cand.as_posix().casefold() in taken:
+            cand = rel.with_name(f"{rel.stem}~{e.idx}{rel.suffix}")
+        taken.add(cand.as_posix().casefold())
+        names[e.idx] = cand.as_posix()
+    return names
+
+
+def _rehash(target: Target, rel: PurePosixPath) -> str | None:
+    read = getattr(target, "read_final", None)
+    if read is None:
+        return None
+    h = hashlib.sha256()
+    try:
+        for chunk in read(rel):
+            h.update(chunk)
+    except TargetError:
+        return None
+    return h.hexdigest()
 
 
 def _skip(prog: Progress, e: Entry, code: str, on_progress) -> None:
@@ -142,7 +195,8 @@ def _skip(prog: Progress, e: Entry, code: str, on_progress) -> None:
     on_progress(prog)
 
 
-def _copy_one(source, target, e: Entry, rel: PurePosixPath, prog: Progress, on_progress) -> str | None:
+def _copy_one(source, target, e: Entry, rel: PurePosixPath, prog: Progress, on_progress,
+              should_stop: Callable[[], bool]) -> str | None:
     """מחזיר SHA-256 אם הקובץ הועתק ואומת; None אם דולג. זורק על ניתוק / כשל יעד."""
     done_before = prog.bytes_done
 
@@ -154,13 +208,13 @@ def _copy_one(source, target, e: Entry, rel: PurePosixPath, prog: Progress, on_p
         try:
             fh = target.open_part(rel)
             try:
-                w = _HashingWriter(fh, bump)
+                w = _HashingWriter(fh, bump, should_stop)
                 source.stream(e, w)
                 fh.flush()
                 os.fsync(fh.fileno())
             finally:
                 fh.close()
-        except DeviceDisconnected:
+        except (DeviceDisconnected, TargetError, CopyCancelled):
             target.discard(rel)
             prog.bytes_done = done_before
             raise
@@ -183,12 +237,17 @@ def _copy_one(source, target, e: Entry, rel: PurePosixPath, prog: Progress, on_p
             _skip(prog, e, "ERR_SIZE_MISMATCH", on_progress)
             return None
 
-        check = hashlib.sha256()
-        for chunk in target.read_part(rel):
-            check.update(chunk)
-        if check.hexdigest() == src_sha:
-            target.commit(rel)
-            return src_sha
+        try:
+            check = hashlib.sha256()
+            for chunk in target.read_part(rel):
+                check.update(chunk)
+            if check.hexdigest() == src_sha:
+                target.commit(rel)
+                return src_sha
+        except TargetError:
+            target.discard(rel)  # לא משאירים .noam-part
+            prog.bytes_done = done_before
+            raise
         target.discard(rel)  # הדיסק החזיר משהו אחר ממה שנכתב — ניסיון אחד נוסף
 
     prog.bytes_done = done_before

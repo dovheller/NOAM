@@ -63,7 +63,7 @@ def test_client_view_would_fail_operator_check():
     {"note": "IMG_ברית_יוסי_כהן.jpg"},
     {"x": ["ok", {"deep": "camera"}]},
     {"error": "failed at /sdcard/DCIM/a"},
-    {"Documents": 1},                                   # גם מפתחות נבדקים
+    {"x": "Documents"},
     {"msg": "file msgstore.db.crypt15"},
 ])
 def test_runtime_check_catches_leaks(leak):
@@ -91,3 +91,19 @@ def test_group_label_strips_mtp_storage_prefix():
 ])
 def test_is_blocked(cmd, blocked):
     assert is_blocked(cmd) is blocked
+
+
+def test_folder_named_like_ui_words_does_not_lock_console():
+    """QA: תיקייה בשם images / Other / 2026 / נועם נעלה את כל הקונסולה."""
+    entries = [Entry(0, "g01", "images/a.jpg", 1, "images"), Entry(1, "g02", "Other/b", 1, "other"), Entry(5, "g06", "verified/x", 1, "other"),
+               Entry(2, "g03", "2026/c", 1, "other"), Entry(3, "g04", "doc/d", 1, "other"),
+               Entry(4, "g05", "נועם/e", 1, "other")]
+    payload = {"by_category": {"images": {"count": 1}, "docs": {"count": 0}}, "ts": "2026-11-10T10:00:00",
+               "state": "verified", "operator": "נועם"}
+    assert_operator_safe(payload, secrets_from_entries(entries), allowed_values={"נועם"})
+
+
+def test_whole_word_still_catches_real_leak():
+    entries = [Entry(0, "g01", "Wedding2024/a.jpg", 1, "images")]
+    with pytest.raises(PrivacyViolation):
+        assert_operator_safe({"x": "error in wedding2024 folder"}, secrets_from_entries(entries))

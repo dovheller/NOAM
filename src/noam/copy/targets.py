@@ -121,6 +121,14 @@ class LocalTarget(Target):
         except OSError as e:
             raise TargetError("ERR_TARGET_READ", e.errno) from e
 
+    def read_final(self, rel: PurePosixPath) -> Iterator[bytes]:
+        try:
+            with self._abs(rel).open("rb") as f:
+                while chunk := f.read(self.CHUNK):
+                    yield chunk
+        except OSError as e:
+            raise TargetError("ERR_TARGET_READ", e.errno) from e
+
     def commit(self, rel: PurePosixPath) -> None:
         try:
             os.replace(self._abs(rel, part=True), self._abs(rel))

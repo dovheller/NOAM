@@ -303,7 +303,10 @@ def verify_embedded(pdf_path: Path, certificate_pem: Path) -> bool:
             if not r.embedded_signatures:
                 return False
             st = validate_pdf_signature(r.embedded_signatures[0], vc)
-            return bool(st.intact and st.valid and st.bottom_line)
+            from pyhanko.sign.validation.status import SignatureCoverageLevel
+            # ENTIRE_FILE: אין שום בית אחרי החתימה — גם לא עדכון אינקרמנטלי שנוסף אחר כך
+            return bool(st.intact and st.valid and st.bottom_line
+                        and st.coverage == SignatureCoverageLevel.ENTIRE_FILE)
     except Exception:  # noqa: BLE001 — קובץ פגום/שונה = לא מאומת, לא קריסה
         return False
 

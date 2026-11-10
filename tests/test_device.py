@@ -115,8 +115,9 @@ def test_scan_excludes_target(tmp_path, monkeypatch):
     (media / "NOAM-SSD").mkdir()
     (media / "NOAM-SSD" / TARGET_MARKER).write_text("")
     monkeypatch.setattr(registry, "_mounts", lambda roots: [media / "PHONE_SD", media / "NOAM-SSD"])
-    labels = [s.info().model for s in registry._scan_mass_storage(roots=[media])]
-    assert labels == ["PHONE_SD"]
+    found = registry._scan_mass_storage(roots=[media])
+    assert [s.root.name for s in found] == ["PHONE_SD"]
+    assert "PHONE_SD" not in found[0].info().model + found[0].info().device_id  # תווית הלקוח לא מוצגת
 
 
 # ---------- MTP (fake libmtp) ----------
