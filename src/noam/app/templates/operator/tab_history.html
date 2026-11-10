@@ -1,0 +1,15 @@
+<div class="panel">
+  <h1>היסטוריית סשנים</h1>
+  <div class="muted" style="font-size:13px;margin:6px 0 18px">רשומות מטא בלבד: מספרים, מצב והפניה לדוח. אין שמירת תוכן.</div>
+  <table class="list">
+    <thead><tr><th>תאריך</th><th>לקוח</th><th>תיק</th><th>שירות</th><th>אומתו</th><th>מצב</th><th></th></tr></thead>
+    <tbody>
+    {% for h in s.history %}
+      <tr><td class="mono">{{ h.date }}</td><td>{{ h.client_name }}</td><td class="mono">{{ h.case_id }}</td><td>{{ h.service | service }}</td>
+        <td class="mono">{{ h.verified | num }}{% if h.skipped %} <span class="chip warn">{{ h.skipped }} דילוגים</span>{% endif %}</td>
+        <td>{% if h.status == "ok" %}<span class="chip ok">אומת ✓</span>{% else %}<span class="chip err">בוטל</span>{% endif %}</td>
+        <td>{% if h.report %}<a class="btn ghost" style="text-decoration:none;font-size:13px;padding:7px 12px" href="/op/report/{{ h.report }}" target="_blank">הדפס דוח</a>{% endif %}</td></tr>
+    {% else %}<tr><td colspan="7" class="muted">אין עדיין סשנים סגורים.</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</div>

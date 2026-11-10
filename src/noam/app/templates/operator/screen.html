@@ -1,0 +1,22 @@
+{%- set ses = s.session -%}
+{%- macro tabbtn(key, label) -%}
+<button hx-post="/op/tab/{{ key }}" hx-swap="none" {% if s.tab == key %}aria-current="page"{% endif %}>{{ label }}</button>
+{%- endmacro -%}
+<main class="op-main">
+  <nav class="op-nav" aria-label="מסכים">
+    {{ tabbtn("queue", "תור סשנים") }}
+    {{ tabbtn("new", "פתיחת סשן חדש") }}
+    {{ tabbtn("active", "סשן פעיל") }}
+    {{ tabbtn("finish", "סיום סשן") }}
+    {{ tabbtn("history", "היסטוריה") }}
+    {{ tabbtn("diag", "אבחון") }}
+    {{ tabbtn("settings", "הגדרות") }}
+    {{ tabbtn("shell", "מסך נועם") }}
+    <div class="note">מפתח החתימה:
+      {% if s.signing.unlocked %}<span class="chip ok">פתוח</span>{% else %}<span class="chip warn">נעול — הדוח לא ייחתם</span>{% endif %}
+    </div>
+  </nav>
+  <section class="op-body">
+  {% include "operator/tab_" ~ s.tab ~ ".html" %}
+  </section>
+</main>

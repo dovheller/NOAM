@@ -1,4 +1,4 @@
-"""WP5 — דוח PDF חתום, עברית RTL (fpdf2 + python-bidi), חתימת ECDSA P-256."""
+"""WP5 — דוח PDF חתום, עברית RTL (fpdf2 text shaping), חתימת ECDSA P-256."""
 from .keys import SigningKey, fingerprint, generate_key, load_public_key
 from .pdf import ReportData, build_report, sign, verify, verify_embedded
 

@@ -1,0 +1,3 @@
+{%- set labels = {"open":"ממתין לשפה ולמכשיר","device_detected":"מכשיר זוהה","target_checked":"יעד נבדק · ממפה","indexed":"הלקוח בוחר","client_selected":"ממתין לחתימה","consent_signed":"נחתם","copying":"מעתיק ומאמת","verified":"הועתק ואומת","reported":"דוח נחתם","closed":"סגור","aborted":"בוטל"} -%}
+{%- set kind = {"copying":"run","verified":"ok","reported":"ok","aborted":"err"} -%}
+<span class="chip {{ kind.get(st, 'run') }}"><span class="dot {% if st in ('copying','open','target_checked') %}pulse{% endif %}"></span>{{ labels.get(st, st) }}</span>

@@ -1,0 +1,75 @@
+<div class="panel">
+{% if not ses %}
+  <h1>סשן פעיל</h1><p class="muted">אין סשן פעיל.</p>
+  <button class="btn" hx-post="/op/tab/new" hx-swap="none">+ סשן חדש</button>
+{% else %}
+  {%- set p = ses.progress -%}
+  <div class="row" style="margin-bottom:18px">
+    <div><h1>סשן פעיל · תיק <span class="mono">{{ ses.case_id }}</span></h1>
+      <div class="muted" style="font-size:13px;margin-top:4px">{{ ses.client_name }} · {{ ses.service | service }} · {{ ses.language | langname }}</div></div>
+    <div class="grow"></div>
+    {% with st = ses.state %}{% include "operator/_state.html" %}{% endwith %}
+  </div>
+  {% if ses.error_code %}<div class="card" style="border-color:var(--warn-line);background:var(--warn-soft);margin-bottom:16px">שגיאה: <span class="mono">{{ ses.error_code }}</span> — {{ ses.error_code | errtext }}</div>{% endif %}
+  <div class="grid2">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="card">
+        {% if p %}
+          <div class="row"><b style="font-size:19px">העתקה ואימות</b><div class="grow"></div><b style="font-size:32px;color:var(--accent)" class="ltr">{{ p.percent }}%</b></div>
+          <div class="bar" style="margin:12px 0"><i style="width:{{ p.percent }}%"></i></div>
+          <div class="row" style="font-size:15px">אומתו <b class="ltr">{{ p.verified | num }}</b> מתוך <b class="ltr">{{ p.total | num }}</b>
+            {% if p.skipped %}<span class="chip warn">{{ p.skipped }} דילוגים</span>{% endif %}
+            {% if p.resumed %}<span class="chip">{{ p.resumed }} כבר אומתו בריצה קודמת</span>{% endif %}
+            <span class="muted ltr">{{ p.bytes_done | size }} / {{ p.bytes_total | size }}</span></div>
+          <div class="muted" style="font-size:13px;margin-top:12px;background:var(--panel);padding:10px;border-radius:8px">כל קובץ מקבל טביעת <span class="mono">SHA-256</span> ומושווה מול העותק ביעד. תוכן הקבצים אינו מוצג כאן.</div>
+        {% elif ses.busy == "index" %}
+          <div class="row"><div class="spinner"></div><b>ממפה את המכשיר — ספירות בלבד…</b></div>
+        {% elif ses.state == "open" %}
+          <div class="row"><div class="spinner"></div><b>{% if ses.language_chosen %}ממתין שהלקוח יחבר מכשיר{% else %}הטאבלט במסך בחירת שפה{% endif %}</b>
+            <div class="grow"></div><button class="btn ghost" hx-post="/op/scan" hx-swap="none">סרוק עכשיו</button></div>
+        {% else %}
+          <b>הטאבלט בשלב: {% with st = ses.state %}{% include "operator/_state.html" %}{% endwith %}</b>
+        {% endif %}
+      </div>
+      {% set ix = ses.selected or ses.index %}
+      {% if ix %}
+      <div class="card">
+        <b style="font-size:18px">פירוט לפי קטגוריה</b>
+        <div class="muted" style="font-size:12px;margin:4px 0 12px">{% if ses.selected %}מה שהלקוח בחר{% else %}כל המכשיר{% endif %} · ספירות ונפחים בלבד, בלי שמות.</div>
+        <div class="stats">
+          {% for c, v in ix.by_category.items() if v.count %}
+          <div class="stat"><span>{{ c | catname }}</span><b class="ltr">{{ v.count | num }}</b><span class="ltr">{{ v.bytes | size }}</span></div>
+          {% endfor %}
+        </div>
+        <div class="muted" style="font-size:12px;margin-top:10px">קבוצות: {% for g in ix.groups %}<span class="mono">{{ g.id }}</span>{% if not loop.last %} · {% endif %}{% endfor %}</div>
+      </div>
+      {% endif %}
+      {% if p and p.skips %}
+      <div class="card"><b>דילוגים</b>
+        {% for k in p.skips %}<div class="kv"><span class="mono">idx {{ k.idx }} · {{ k.group }}</span><span class="mono">{{ k.error }}</span></div>{% endfor %}
+      </div>
+      {% endif %}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="card">
+        <div class="muted" style="font-size:13px;margin-bottom:8px">מכשירים</div>
+        {% for d in ses.devices %}
+          <div class="kv"><span>{{ d.model }} <span class="mono muted" style="font-size:12px">{{ d.interface | upper }} · {{ d.device_id }}</span></span>
+            {% if d.unavailable %}<span class="chip warn">לא נגיש · <span class="mono">{{ d.reason }}</span></span>{% elif d.selected %}<span class="chip ok">נבחר</span>{% else %}<span class="chip">זוהה</span>{% endif %}</div>
+        {% else %}<div class="muted">לא זוהה מכשיר.</div>{% endfor %}
+        {% if ses.unparsed %}<div class="chip warn" style="margin-top:8px">{{ ses.unparsed }} שורות ברשימת הקבצים לא פוענחו</div>{% endif %}
+        <div class="kv"><span class="muted">יעד</span><b>{{ s.station.target }} · <span class="ltr">{{ s.target_free | size }}</span> פנויים</b></div>
+      </div>
+      <div class="term" aria-label="יומן פעולות">
+        {% for e in s.audit_tail %}<div>{{ e.ts[11:19] }}  {{ e.event }}{% if e.to_state %} → {{ e.to_state }}{% endif %}{% if e.count is defined %}  n={{ e.count }}{% endif %}{% if e.error_code %}  <span class="warn">{{ e.error_code }}</span>{% endif %}</div>{% endfor %}
+      </div>
+      {% if ses.state in ("verified", "aborted", "reported") %}
+        <button class="btn dark" hx-post="/op/tab/finish" hx-swap="none">לסיום הסשן ולדוח</button>
+      {% endif %}
+      {% if ses.state not in ("aborted", "reported", "closed") %}
+        <button class="btn danger" hx-post="/op/abort" hx-swap="none" hx-confirm="לבטל את הסשן? ההעתקה תיעצר.">בטל סשן</button>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
+</div>

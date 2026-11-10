@@ -1,0 +1,13 @@
+<div class="panel">
+  <h1>לוח אבחון</h1>
+  <div class="muted" style="font-size:13px;margin:6px 0 18px">בדיקות בשפה פשוטה. אם משהו לא בסדר — כתוב מה לעשות.</div>
+  <div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr))">
+    {% for c in checks %}
+    <div class="card check {{ c.level }}">
+      <b style="font-size:17px">{{ "✓" if c.level == "ok" else "!" }} {{ c.title }}</b>
+      <div style="margin-top:10px">{{ c.state }}</div>
+      <div class="muted" style="font-size:13px;margin-top:6px">{{ c.action }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>

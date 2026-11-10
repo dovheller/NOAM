@@ -125,11 +125,14 @@ def _walk_strings(obj: Any) -> Iterable[str]:
             yield from _walk_strings(v)
 
 
-def assert_operator_safe(payload: Any, secrets: Iterable[str] = ()) -> Any:
+def assert_operator_safe(payload: Any, secrets: Iterable[str] = (), allowed_values: Iterable[str] = ()) -> Any:
     """זורק PrivacyViolation אם מחרוזת כלשהי במטען מכילה מקטע נתיב של הלקוח או תבנית תוכן.
     מחזיר את המטען כמו שהוא אם הוא נקי — לשימוש בשרשור: return assert_operator_safe(build())."""
     secret_list = [s for s in secrets if s]
+    allowed = {a for a in allowed_values if a}
     for s in _walk_strings(payload):
+        if s in allowed:  # ערכים שהמפעיל עצמו הקליד (שם הלקוח) — מותרים גם אם שם תיקייה דומה
+            continue
         low = s.lower()
         for p in CONTENT_PATTERNS:
             if p.lower() in low:

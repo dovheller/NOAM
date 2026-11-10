@@ -1,0 +1,15 @@
+{%- set r = c.result -%}
+<div class="center" style="max-width:720px;margin:20px auto">
+  <div class="big-ok">✓</div>
+  <h1 style="margin-top:20px">{{ t.done_title }}</h1>
+  {% if r %}
+  <p class="lead">{{ t.done_sub | replace("{n}", r.verified | num) | replace("{size}", r.bytes | size) }}</p>
+  {% if r.skipped %}<p class="lead">{{ t.done_skips | replace("{s}", r.skipped | string) }}</p>{% endif %}
+  {% endif %}
+  <p class="lead">{{ t.nothing_deleted }}</p>
+  <div class="card" style="margin-top:24px;text-align:start"><b>{{ t.report_t }}</b><p class="muted">{{ t.report_b }}</p>
+    <span class="mono muted">NOAM-{{ c.case_id }}</span></div>
+  <div class="card" style="margin-top:16px;background:var(--ok-soft);border-color:var(--ok-line)">
+    <b style="font-size:21px">{{ t.disconnect_ok }}</b><div style="color:var(--ok-ink)">{{ t.thanks }}</div></div>
+  <p class="muted" style="margin-top:18px">{{ t.questions }} {{ c.station.name }} · <span class="ltr">{{ c.station.phone }}</span><br>{{ c.station.address }}</p>
+</div>

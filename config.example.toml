@@ -1,24 +1,33 @@
-# העתק ל-config.toml (שלא נכנס לריפו) ומלא.
+# העתק ל-/etc/noam/config.toml (לא נכנס לריפו) ומלא.
 
 [station]
 id = "ST-02"
 display_name = "נועם הלר"
 address = "מרכז אורנים · כנפי נשרים 68, ירושלים"
+phone = "052-898-8890"
 
 [paths]
-audit_dir = "./audit"
-reports_dir = "./reports"
-folder_template = "/{case}/{date}/{category}"
+audit_dir = "/var/lib/noam/audit"
+reports_dir = "/var/lib/noam/reports"
 
 [targets]
+root = "/media/noam/NOAM-SSD"   # בשורש הדיסק: קובץ .noam-target
 default = "NOAM-SSD"
 
 [languages]
-enabled = ["he", "yi", "en", "ru"]   # "fr" זמין, כבוי
+enabled = ["he", "yi", "en", "ru", "fr"]
 
 [signing]
-private_key_path = "./keys/station.pem"   # לא בריפו
+private_key_path = "/var/lib/noam/keys/station.pem"   # מוצפן; הסיסמה מוזנת בהפעלה, לא כאן
 algorithm = "ECDSA-P256"
+
+[operator]
+name = "נועם"
+pin = ""            # קוד לאזור ההגדרות. ריק = ההגדרות נעולות
+
+[network]
+operator_hosts = ["127.0.0.1", "::1"]   # הקונסולה רק מהעמדה עצמה
+tablet_hosts = []                        # ריק = כל כתובת ברשת הסגורה
 
 [privacy]
 mode = "strict"

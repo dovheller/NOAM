@@ -1,0 +1,27 @@
+<div class="panel">
+  <div class="row" style="margin-bottom:18px">
+    <div><h1>תור סשנים</h1><div class="muted" style="font-size:13px;margin-top:4px">עמדה <span class="mono">{{ s.station.id }}</span> · מפעיל: {{ s.station.operator }}</div></div>
+    <div class="grow"></div>
+    {% if not ses %}<button class="btn" hx-post="/op/tab/new" hx-swap="none">+ סשן חדש</button>{% endif %}
+  </div>
+  <div class="stats" style="margin-bottom:18px">
+    <div class="stat"><span>פעיל כרגע</span><b style="color:var(--accent)">{{ 1 if ses else 0 }}</b></div>
+    <div class="stat"><span>הושלמו (אחרונים)</span><b style="color:var(--ok)">{{ s.history | selectattr("status", "equalto", "ok") | list | length }}</b></div>
+    <div class="stat"><span>מקום פנוי ביעד</span><b class="ltr">{{ s.target_free | size }}</b></div>
+  </div>
+  <table class="list">
+    <thead><tr><th>תיק</th><th>לקוח</th><th>שירות</th><th>מצב</th><th></th></tr></thead>
+    <tbody>
+    {% if ses %}
+      <tr><td class="mono">{{ ses.case_id }}</td><td>{{ ses.client_name }}</td><td>{{ ses.service | service }}</td>
+        <td>{% with st = ses.state %}{% include "operator/_state.html" %}{% endwith %}</td>
+        <td><button class="btn ghost" hx-post="/op/tab/active" hx-swap="none">פתח</button></td></tr>
+    {% endif %}
+    {% for h in s.history[:8] %}
+      <tr><td class="mono">{{ h.case_id }}</td><td>{{ h.client_name }}</td><td>{{ h.service | service }}</td>
+        <td>{% if h.status == "ok" %}<span class="chip ok">הושלם</span>{% else %}<span class="chip err">בוטל · <span class="mono">{{ h.abort_code }}</span></span>{% endif %}</td><td></td></tr>
+    {% endfor %}
+    {% if not ses and not s.history %}<tr><td colspan="5" class="muted">אין עדיין סשנים היום.</td></tr>{% endif %}
+    </tbody>
+  </table>
+</div>

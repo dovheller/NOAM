@@ -1,0 +1,40 @@
+<div class="panel">
+  <h1>הגדרות</h1>
+  {% if not settings_open %}
+    <form class="card" style="max-width:420px;margin:30px auto;text-align:center" hx-post="/op/settings/unlock" hx-swap="none">
+      <b style="font-size:19px">אזור מוגן</b>
+      <p class="muted">ההגדרות פתוחות למפעיל מורשה בלבד.</p>
+      <label for="pin" class="muted">קוד</label>
+      <input id="pin" name="pin" type="password" class="mono" style="text-align:center;letter-spacing:.4em" autocomplete="off">
+      <button class="btn" style="width:100%;margin-top:12px">כניסה</button>
+    </form>
+  {% else %}
+  <div class="row" style="margin:6px 0 18px"><span class="chip ok">פתוח · מפעיל מורשה</span><div class="grow"></div>
+    <button class="btn ghost" hx-post="/op/settings/lock" hx-swap="none">נעל שוב</button></div>
+  <div class="stats" style="grid-template-columns:repeat(auto-fit,minmax(320px,1fr))">
+    <div class="card"><b>העמדה</b>
+      <div class="kv"><span class="muted">שם</span><span>{{ s.station.name }}</span></div>
+      <div class="kv"><span class="muted">כתובת</span><span>{{ s.station.address }}</span></div>
+      <div class="kv"><span class="muted">טלפון</span><span class="ltr">{{ s.station.phone }}</span></div>
+      <div class="kv"><span class="muted">יעד</span><span class="mono">{{ s.station.target }}</span></div>
+      <div class="muted" style="font-size:12px;margin-top:8px">שינוי: בקובץ <span class="mono">/etc/noam/config.toml</span> והפעלה מחדש.</div>
+    </div>
+    <div class="card"><b>שפות בטאבלט</b>
+      {% for l in s.station.languages %}<div class="kv"><span>{{ l | langname }}</span><span class="chip ok">פעיל</span></div>{% endfor %}
+    </div>
+    <div class="card"><b>מפתח חתימה</b>
+      {% if s.signing.unlocked %}
+        <div class="term" style="margin-top:10px"><div>alg  ECDSA P-256 · PAdES</div><div>fp   {{ s.signing.fingerprint }}</div></div>
+        <div style="color:var(--ok);margin-top:8px">✓ מפתח פתוח וטעון</div>
+      {% else %}
+        <form hx-post="/op/unlock" hx-swap="none" style="margin-top:10px">
+          <label for="pass">סיסמת המנהל (דב או נועם)</label>
+          <input id="pass" name="passphrase" type="password" autocomplete="off">
+          <button class="btn" style="margin-top:10px">פתח מפתח</button>
+        </form>
+        <div class="muted" style="font-size:12px;margin-top:8px">הסיסמה נשמרת בזיכרון בלבד, עד כיבוי העמדה.</div>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+</div>

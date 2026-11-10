@@ -1,0 +1,29 @@
+<div class="panel">
+  <h1>פתיחת סשן חדש</h1>
+  <div class="muted" style="font-size:13px;margin:6px 0 20px">הפרטים נשמרים ביומן הסשנים (בלי שם וטלפון) ומודפסים בדוח החתום.</div>
+  {% if ses %}
+    <div class="card">יש סשן פעיל (<span class="mono">{{ ses.case_id }}</span>). סגור אותו לפני פתיחת חדש.</div>
+  {% else %}
+  <form class="card" style="max-width:760px" hx-post="/op/session" hx-swap="none">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px">
+      <div><label for="case_id">מספר תיק</label><input id="case_id" name="case_id" type="text" required class="mono" value="{{ next_case }}" pattern="[A-Za-z0-9_\-]{1,40}"></div>
+      <div><label for="client_name">שם לקוח</label><input id="client_name" name="client_name" type="text" required autocomplete="off"></div>
+      <div><label for="phone">טלפון</label><input id="phone" name="phone" type="tel" class="mono" autocomplete="off"></div>
+      <div><label for="language">שפת הלקוח</label>
+        <select id="language" name="language">{% for l in s.station.languages %}<option value="{{ l }}">{{ l | langname }}</option>{% endfor %}</select></div>
+    </div>
+    <fieldset style="border:0;padding:0;margin:20px 0 0"><legend style="font-size:14px;font-weight:500;margin-bottom:8px">סוג שירות</legend>
+      <div class="row">
+        <label class="card" style="margin:0;padding:12px 18px"><input type="radio" name="service" value="transfer" checked> העברה <span class="muted" style="font-size:12px">— העתקה למדיה חדשה</span></label>
+        <label class="card" style="margin:0;padding:12px 18px"><input type="radio" name="service" value="backup"> גיבוי <span class="muted" style="font-size:12px">— עותק שני, המקור נשאר</span></label>
+        <label class="card" style="margin:0;padding:12px 18px"><input type="radio" name="service" value="restore"> שחזור <span class="muted" style="font-size:12px">— החזרה מגיבוי</span></label>
+      </div>
+    </fieldset>
+    <div class="row" style="margin-top:22px;padding-top:18px;border-top:1px solid var(--line-soft)">
+      <button class="btn" type="submit">פתח סשן והמשך</button>
+      <button class="btn ghost" type="button" hx-post="/op/tab/queue" hx-swap="none">ביטול</button>
+      <div class="grow"></div><div class="muted" style="font-size:12px">הטאבלט יעבור אוטומטית לבחירת שפה.</div>
+    </div>
+  </form>
+  {% endif %}
+</div>

@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NOAM · קונסולת המפעיל</title>
+<link rel="stylesheet" href="/static/app.css">
+<script src="/static/vendor/htmx-2.0.4.min.js"></script>
+<script src="/static/vendor/htmx-ext-ws-2.0.3.js"></script>
+<script src="/static/operator.js"></script>
+</head>
+<body hx-ext="ws" ws-connect="/ws/operator">
+<header class="op-top">
+  <div><div class="brand">{{ s.station.name }}</div><div class="sub">קונסולת המפעיל · <span class="mono">{{ s.station.id }}</span></div></div>
+  <div class="grow"></div>
+  <div class="sub">המפעיל אינו רואה תוכן של הלקוח — ספירות, מצב ואימות בלבד.</div>
+</header>
+<div id="screen">{% include "operator/screen.html" %}</div>
+<div id="toast" class="toast" role="alert"></div>
+</body>
+</html>

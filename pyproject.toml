@@ -10,13 +10,18 @@ dependencies = [
   "pyzipper>=0.3",
   "cryptography>=42",
   "fastapi>=0.110",
-  "uvicorn>=0.29",
+  "uvicorn[standard]>=0.29",  # כולל websockets
+  "jinja2>=3.1",
+  "python-multipart>=0.0.9",
 ]
+
+[project.scripts]
+noam-station = "noam.app.main:main"
 
 [project.optional-dependencies]
 layer2 = ["whatsapp-chat-exporter"]
 consolidate = ["imagehash>=4.3", "filetype>=1.2", "libarchive-c>=5"]
-dev = ["pytest>=8", "ruff>=0.5", "pre-commit>=3.7", "pypdf>=4", "bagit>=1.8"]
+dev = ["pytest>=8", "ruff>=0.5", "pre-commit>=3.7", "pypdf>=4", "bagit>=1.8", "httpx>=0.27"]
 
 [build-system]
 requires = ["setuptools>=68"]
@@ -27,6 +32,7 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "noam.report" = ["fonts/*"]
+"noam.app" = ["static/*", "static/vendor/*", "static/fonts/*", "templates/*.html", "templates/*/*.html", "i18n/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

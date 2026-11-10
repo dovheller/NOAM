@@ -1,0 +1,13 @@
+<h1>{{ t.connect_title }}</h1>
+<p class="lead">{{ t.connect_sub }}</p>
+<div class="steps">
+  <div class="step"><span class="n">1</span><h2 style="font-size:21px">{{ t.step1_t }}</h2><p class="muted">{{ t.step1_b }}</p></div>
+  <div class="step"><span class="n">2</span><h2 style="font-size:21px">{{ t.step2_t }}</h2><p class="muted">{{ t.step2_b }}</p></div>
+  <div class="step"><span class="n">3</span><h2 style="font-size:21px">{{ t.step3_t }}</h2><p class="muted">{{ t.step3_b }}</p></div>
+</div>
+<div class="card row" style="margin-top:26px;background:var(--accent-soft);border-color:var(--accent-soft)">
+  <div class="spinner"></div><b style="font-size:20px;color:var(--navy)">{{ t.searching }}</b>
+</div>
+{% for d in c.devices if d.unavailable %}
+<div class="card" style="margin-top:12px;background:var(--warn-soft);border-color:var(--warn-line)">{{ d.model }} — {{ t.get("r_" ~ d.reason, t.r_other) }}</div>
+{% endfor %}

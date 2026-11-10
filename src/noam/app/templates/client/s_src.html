@@ -1,0 +1,21 @@
+<h1>{{ t.src_title }}</h1>
+<p class="lead">{{ t.src_sub }}</p>
+<h2 class="muted" style="font-size:16px;margin:26px 0 10px">{{ t.source }}</h2>
+<div class="tiles" style="grid-template-columns:repeat(auto-fill,minmax(240px,1fr))">
+  {% for d in c.devices %}
+    {% if d.unavailable %}
+    <div class="tile" style="opacity:.75"><div class="name">{{ d.model }}</div><div class="meta">{{ t.not_readable }} · {{ t.get("r_" ~ d.reason, t.r_other) }}</div></div>
+    {% else %}
+    <button class="tile" hx-post="/cl/source/{{ loop.index0 }}" hx-swap="none" {% if c.busy %}disabled aria-pressed="true"{% endif %}>
+      <div class="name">{{ d.model }}</div><div class="meta mono">{{ d.interface | upper }}</div>
+      <div class="meta" style="color:var(--accent);font-weight:600">{% if c.busy %}{{ t.indexing }}{% else %}{{ t.choose }}{% endif %}</div>
+    </button>
+    {% endif %}
+  {% endfor %}
+</div>
+<h2 class="muted" style="font-size:16px;margin:26px 0 10px">{{ t.target }}</h2>
+<div class="card" style="border:2px solid var(--accent)">
+  <div class="row"><b style="font-size:21px">{{ c.target.label }}</b><div class="grow"></div>
+  {% if c.target.free is not none %}<span style="color:var(--ok);font-weight:600">{{ t.free_space }}: <span class="ltr">{{ c.target.free | size }}</span></span>{% endif %}</div>
+</div>
+{% if c.busy == "index" %}<div class="card row" style="margin-top:16px"><div class="spinner"></div><b>{{ t.indexing }}</b></div>{% endif %}

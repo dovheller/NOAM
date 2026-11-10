@@ -1,0 +1,45 @@
+<div class="panel">
+  <h1>סיום סשן</h1>
+  {% if not ses %}<p class="muted">אין סשן פעיל.</p>{% else %}
+  <div class="muted" style="font-size:13px;margin:6px 0 18px">תיק <span class="mono">{{ ses.case_id }}</span> · {{ ses.client_name }}</div>
+  {% set p = ses.progress %}
+  {% if ses.state in ("verified", "reported") %}
+    <div class="card row" style="background:var(--ok-soft);border-color:var(--ok-line);margin-bottom:16px">
+      <div class="big-ok" style="width:44px;height:44px;font-size:22px;margin:0">✓</div>
+      <div><b style="font-size:19px">העותק נכתב ואומת</b><div style="color:var(--ok-ink)">{{ p.verified | num }} מתוך {{ p.total | num }} אומתו{% if p.skipped %} · {{ p.skipped }} דולגו ונרשמו{% endif %}</div></div>
+    </div>
+  {% elif ses.state == "aborted" %}
+    <div class="card" style="background:var(--warn-soft);border-color:var(--warn-line);margin-bottom:16px"><b>הסשן בוטל</b> · <span class="mono">{{ ses.abort_code }}</span> — {{ ses.abort_code | errtext }}. אפשר להפיק דוח חלקי חתום.</div>
+  {% else %}
+    <div class="card" style="margin-bottom:16px">הסשן עדיין בתהליך ({% with st = ses.state %}{% include "operator/_state.html" %}{% endwith %}).</div>
+  {% endif %}
+  <div class="grid2">
+    <div class="card">
+      <b style="font-size:18px">סיכום מספרי</b>
+      {% if p %}
+      <div class="kv"><span class="muted">נבחרו</span><b class="ltr">{{ p.total | num }}</b></div>
+      <div class="kv"><span class="muted">אומתו</span><b class="ltr">{{ p.verified | num }}</b></div>
+      <div class="kv"><span class="muted">דולגו</span><b class="ltr">{{ p.skipped | num }}</b></div>
+      <div class="kv"><span class="muted">נפח שנכתב</span><b class="ltr">{{ p.bytes_done | size }}</b></div>
+      {% endif %}
+      {% if ses.manifest_sha256 %}<div class="muted" style="font-size:12px;margin-top:12px">טביעת מניפסט: <span class="mono">{{ ses.manifest_sha256[:16] }}…{{ ses.manifest_sha256[-4:] }}</span></div>{% endif %}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div class="card">
+        <b>דוח חתום</b>
+        <p class="muted" style="font-size:13px">PDF עם פרטי הסשן, הספירות, תוצאות האימות וחתימה דיגיטלית של העמדה. עותק נשמר גם על מדיית הלקוח.</p>
+        {% if ses.report %}
+          <a class="btn" style="display:block;text-align:center;text-decoration:none" href="/op/report/{{ ses.report }}" target="_blank">פתח והדפס · <span class="mono">{{ ses.report }}</span></a>
+        {% elif not s.signing.unlocked %}
+          <div class="chip warn">מפתח החתימה נעול — פתח אותו בהגדרות</div>
+        {% else %}
+          <button class="btn" style="width:100%" hx-post="/op/report" hx-swap="none" {% if ses.state not in ("verified","aborted") %}disabled{% endif %}>הפק דוח חתום</button>
+        {% endif %}
+      </div>
+      <div class="card"><b style="font-size:14px">לפני שהלקוח מתנתק</b>
+        <div class="muted" style="line-height:1.9;font-size:14px"><div>✓ העותק אומת מול המקור</div><div>✓ המכשיר לא נמחק ולא שונה</div><div>✓ הדוח נמסר ללקוח</div></div></div>
+      <button class="btn dark" hx-post="/op/close" hx-swap="none" {% if ses.state not in ("reported","aborted") %}disabled{% endif %}>סגור סשן וחזור לתור</button>
+    </div>
+  </div>
+  {% endif %}
+</div>

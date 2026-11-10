@@ -1,0 +1,24 @@
+{%- set sel = c.selected_groups -%}
+<div class="row">
+  <div><h1>{{ t.browse_title }}</h1><p class="lead">{{ t.browse_sub }}</p></div>
+  <div class="grow"></div>
+  {% if sel | length == c.browse.groups | length %}
+    <button class="btn ghost" hx-post="/cl/select" hx-vals='{"mode":"none"}' hx-swap="none">{{ t.select_none }}</button>
+  {% else %}
+    <button class="btn ghost" hx-post="/cl/select" hx-vals='{"mode":"all"}' hx-swap="none">{{ t.select_all }}</button>
+  {% endif %}
+</div>
+<div class="tiles" style="margin-top:20px">
+  {% for g in c.browse.groups %}
+  <button class="tile" aria-pressed="{{ 'true' if g.id in sel else 'false' }}" hx-post="/cl/toggle/{{ g.id }}" hx-swap="none">
+    <div class="row"><span class="name" dir="auto">{{ g.label or t.root_files }}</span><div class="grow"></div><span aria-hidden="true" style="font-size:22px;color:var(--accent)">{{ "✓" if g.id in sel else "" }}</span></div>
+    <div class="meta">{{ g.count | num }} {{ t.files }} · <span class="ltr">{{ g.bytes | size }}</span></div>
+    <div class="meta">{{ t["cat_" ~ g.main_category] }}</div>
+  </button>
+  {% endfor %}
+</div>
+<div class="sticky">
+  <b style="font-size:20px">{{ t.selected }}: {{ c.selection.count | num }} {{ t.files }} · <span class="ltr">{{ c.selection.bytes | size }}</span></b>
+  <div class="grow"></div>
+  <button class="btn" hx-post="/cl/confirm" hx-swap="none" {% if not c.selection.count %}disabled{% endif %}>{{ t.continue }}</button>
+</div>

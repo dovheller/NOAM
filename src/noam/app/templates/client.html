@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="{{ c.lang }}" dir="{{ t.dir }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>NOAM</title>
+<link rel="stylesheet" href="/static/app.css">
+<script src="/static/vendor/htmx-2.0.4.min.js"></script>
+<script src="/static/vendor/htmx-ext-ws-2.0.3.js"></script>
+<script src="/static/vendor/signature_pad-5.0.4.umd.min.js"></script>
+<script src="/static/client.js"></script>
+</head>
+<body class="tablet" hx-ext="ws" ws-connect="/ws/client">
+<div id="screen">{% include "client/screen.html" %}</div>
+<div id="toast" class="toast" role="alert"></div>
+</body>
+</html>

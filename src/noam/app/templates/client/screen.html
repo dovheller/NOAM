@@ -1,0 +1,11 @@
+{%- set order = ["lang","connect","src","browse","consent","progress","done"] -%}
+<div dir="{{ t.dir }}" lang="{{ c.lang }}">
+<header class="tb-top">
+  <div class="brand">{{ c.station.name }}</div><div class="muted" style="font-size:13px">{{ t.brand_sub }}</div>
+  <div class="grow"></div>
+  {% if c.screen in order %}<div class="muted" style="font-size:14px">{{ t.step | replace("{n}", (order.index(c.screen) + 1) | string) }}</div>{% endif %}
+</header>
+<main class="tb">
+{% include "client/s_" ~ c.screen ~ ".html" %}
+</main>
+</div>
