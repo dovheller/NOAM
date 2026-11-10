@@ -6,9 +6,11 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from . import mtp
-from .base import Source
+from .adb import ADBBackend, ADBSource, SubprocessADBBackend, unreachable_reason
+from .base import DeviceInfo, Source
 from .errors import DeviceError
 from .mass_storage import MassStorageSource
+from .unavailable import UnavailableSource
 
 log = logging.getLogger(__name__)
 
@@ -60,6 +62,24 @@ def _scan_mass_storage(roots: Iterable[Path] = _MASS_STORAGE_ROOTS, exclude: Ite
     return sources
 
 
-def scan(exclude: Iterable[Path] = ()) -> list[Source]:
-    """כל המקורות המחוברים: MTP ואחסון רגיל. יעדי העמדה (exclude או סמן) לא נכללים."""
-    return _scan_mtp() + _scan_mass_storage(exclude=exclude)
+def _scan_adb(backend: ADBBackend | None = None, skip_serials: set[str] = frozenset()) -> list[Source]:
+    """מכשירים ב-adb. מכשיר שכבר נקרא ב-MTP לא נכלל שוב. מכשיר לא מאושר → UnavailableSource."""
+    be = backend or SubprocessADBBackend()
+    out: list[Source] = []
+    for d in be.list_devices():
+        if d.serial in skip_serials:
+            continue
+        reason = unreachable_reason(d.state)
+        if reason is None:
+            out.append(ADBSource(be, d.serial, model=d.model))
+        else:
+            out.append(UnavailableSource(DeviceInfo(d.serial, d.model or "Android", "adb"), reason))
+    return out
+
+
+def scan(exclude: Iterable[Path] = (), *, adb_backend: ADBBackend | None = None) -> list[Source]:
+    """כל המקורות: MTP, adb (אם מאושר), אחסון רגיל. יעדי העמדה לא נכללים.
+    מכשיר שזוהה ולא נקרא מוחזר כ-UnavailableSource — כדי שיופיע בדוח, לא ייעלם."""
+    mtp_sources = _scan_mtp()
+    seen = {s.info().device_id for s in mtp_sources}
+    return mtp_sources + _scan_adb(adb_backend, seen) + _scan_mass_storage(exclude=exclude)
