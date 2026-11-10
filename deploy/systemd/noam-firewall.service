@@ -1,0 +1,12 @@
+[Unit]
+Description=NOAM closed-network firewall (nftables)
+Before=network-pre.target
+Wants=network-pre.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/nft -f /etc/noam/nftables.conf
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

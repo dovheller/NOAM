@@ -1,0 +1,37 @@
+#cloud-config
+# Ubuntu 24.04 LTS autoinstall לעמדת NOAM (ADR 0002). WP10.
+# לא אומת על חומרה. לפני שימוש: להחליף את כל ה-CHANGE_ME, ולבדוק בהתקנת ניסיון.
+# הפעלה: לשים את הקובץ (ואת meta-data ריק) על USB בשם CIDATA, ולאתחל מ-ISO של Ubuntu Server 24.04.
+autoinstall:
+  version: 1
+  locale: he_IL.UTF-8
+  timezone: Asia/Jerusalem
+  keyboard: { layout: us,il, toggle: alt_shift_toggle }
+  identity:
+    hostname: noam-st
+    username: noamadmin
+    # mkpasswd -m sha-512  ← סיסמת מנהל מערכת (לא סיסמת מפתח החתימה)
+    password: "CHANGE_ME_SHA512_HASH"
+  ssh:
+    install-server: false            # אין גישה מרחוק לעמדה
+  storage:
+    layout:
+      name: lvm
+      password: "CHANGE_ME_LUKS_PASSPHRASE"   # דיסק מוצפן (LUKS). מוזן בכל הפעלה.
+  packages:
+    - python3-venv
+    - python3-pip
+    - libmtp9
+    - mtp-tools
+    - adb
+    - nftables
+    - cage
+    - exfatprogs
+    - fonts-dejavu-core
+    - poppler-utils
+    - git
+  snaps:
+    - name: chromium
+  late-commands:
+    - curtin in-target -- systemctl disable --now systemd-networkd-wait-online.service || true
+    - curtin in-target -- apt-get -y purge unattended-upgrades || true   # אין עדכונים שקטים בעמדה סגורה

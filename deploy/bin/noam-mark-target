@@ -1,0 +1,7 @@
+#!/bin/sh
+# מסמן דיסק כיעד של העמדה, כדי שהסריקה לא תציג אותו כמקור. שימוש: sudo noam-mark-target /media/noam/NOAM-SSD
+set -eu
+T="${1:?usage: noam-mark-target <mount point>}"
+[ -d "$T" ] || { echo "not a directory: $T" >&2; exit 1; }
+date -u +"%Y-%m-%dT%H:%M:%SZ" > "$T/.noam-target"
+echo "marked: $T"

@@ -1,0 +1,6 @@
+# NOAM — כונני לקוח (כרטיס SD, דיסק-און-קי, דיסק חיצוני) נטענים לקריאה בלבד.
+# דיסק היעד (תווית NOAM-SSD) נטען לכתיבה דרך fstab, לא כאן.
+ACTION=="add", SUBSYSTEM=="block", ENV{DEVTYPE}=="partition", ENV{ID_BUS}=="usb", ENV{ID_FS_LABEL}!="NOAM-SSD", \
+  ENV{ID_FS_USAGE}=="filesystem", TAG+="systemd", ENV{SYSTEMD_WANTS}+="noam-automount@%k.service"
+ACTION=="add", SUBSYSTEM=="block", ENV{DEVTYPE}=="partition", KERNEL=="mmcblk*", ENV{ID_FS_USAGE}=="filesystem", \
+  TAG+="systemd", ENV{SYSTEMD_WANTS}+="noam-automount@%k.service"

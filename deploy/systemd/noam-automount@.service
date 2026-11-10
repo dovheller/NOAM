@@ -1,0 +1,10 @@
+[Unit]
+Description=NOAM: mount client storage %I read-only
+# הופעל ע"י udev (99-noam-storage.rules) לכל מחיצה של כונן נשלף שאינו דיסק היעד.
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# עיקרון 2: המקור לא משתנה — ro,noload (בלי replay של journal), noexec, nosuid, nodev
+ExecStart=/bin/sh -c 'mkdir -p /media/noam-src/%I && mount -o ro,noexec,nosuid,nodev /dev/%I /media/noam-src/%I || mount -o ro,noload,noexec,nosuid,nodev /dev/%I /media/noam-src/%I'
+ExecStop=/bin/sh -c 'umount /media/noam-src/%I; rmdir /media/noam-src/%I'

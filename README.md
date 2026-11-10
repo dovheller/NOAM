@@ -24,6 +24,17 @@
 
 קובצי `.dc.html` הם פורמט של Claude Design ונטענים דרך `support.js`.
 
+## הדגמה בלי חומרה
+
+```bash
+pip install -e ".[dev]"
+python scripts/demo_station.py      # http://127.0.0.1:8000/operator  ·  /client
+```
+
+## התקנה בעמדה
+
+`docs/INSTALL.md` (מקים) · `docs/OPERATOR_GUIDE.md` (נועם).
+
 ## התחלה
 
 ```bash

@@ -1,0 +1,3 @@
+# NOAM — טלפונים ב-MTP נגישים לשירות (קבוצה noam), לא רק למשתמש שמחובר למסך.
+# נשען על הזיהוי של libmtp9 (69-libmtp.rules מסמן ID_MTP_DEVICE).
+ENV{ID_MTP_DEVICE}=="1", MODE="0660", GROUP="noam"

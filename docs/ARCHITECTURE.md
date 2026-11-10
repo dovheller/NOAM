@@ -50,3 +50,18 @@
 ## אחסון
 - יעד הלקוח: מה שנבחר (SSD, SD, ענן).
 - בעמדה: יומני audit, מניפסטים ודוחות בלבד. **אין עותק של תוכן לקוח בעמדה.**
+
+
+## מימוש (2026-11-10)
+
+| נתיב | מה |
+|---|---|
+| `src/noam/station/` | מנהל העמדה: סשן אחד בכל פעם, זרימה מלאה, threads לעבודה ארוכה, `operator_snapshot()` / `client_snapshot()` |
+| `src/noam/app/` | FastAPI: `/operator` (רק מ-`operator_hosts`), `/client`, WebSocket `/ws/operator` ו-`/ws/client`. תבניות Jinja2, htmx מקומי, `hx-swap-oob` |
+| `src/noam/app/i18n/*.json` | חמש שפות לטאבלט. הקונסולה בעברית בלבד |
+| `deploy/` | autoinstall, systemd, udev, nftables, `install.sh` |
+| `scripts/demo_station.py` | הרצה בלי חומרה, עם טלפון מדומה |
+
+**זרימת מצב:** פעולה (HTTP) → `Station` משנה מצב תחת נעילה → מאזין → `Hub` מרנדר את שני המסכים מחדש → WebSocket. הדפדפנים לא מחזיקים מצב.
+
+**דיסק היעד:** `<root>/<תיק>/` הוא תיק BagIt: `data/` לקבצים, `manifest-sha256.txt`, `bag-info.txt`, ו-`.noam/` לדוח, לחתימת ההסכמה וליומן ההתקדמות.

@@ -1,0 +1,23 @@
+[Unit]
+Description=NOAM operator console (cage + chromium kiosk on tty1)
+After=noam-station.service systemd-user-sessions.service
+Wants=noam-station.service
+Conflicts=getty@tty1.service
+
+[Service]
+User=noam-kiosk
+PAMName=login
+TTYPath=/dev/tty1
+StandardInput=tty
+StandardOutput=journal
+Environment=XDG_RUNTIME_DIR=/run/user/%U
+ExecStartPre=/bin/sh -c 'for i in $(seq 1 30); do curl -sf http://127.0.0.1:8000/operator >/dev/null && exit 0; sleep 1; done'
+# -s: מאפשר מעבר מסוף (Ctrl+Alt+F2) לתחזוקה. בלי שורת כתובת, בלי היסטוריה.
+ExecStart=/usr/bin/cage -s -- /snap/bin/chromium --kiosk --app=http://127.0.0.1:8000/operator \
+  --incognito --no-first-run --disable-translate --disable-features=Translate,MediaRouter \
+  --disable-sync --disable-background-networking --password-store=basic --lang=he
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=graphical.target

@@ -1,0 +1,36 @@
+[Unit]
+Description=NOAM station server (local web, closed network)
+After=network.target local-fs.target
+Wants=noam-firewall.service
+
+[Service]
+User=noam-svc
+Group=noam
+EnvironmentFile=/etc/noam/secrets.env
+Environment=NOAM_CONFIG=/etc/noam/config.toml
+Environment=NOAM_HOST=0.0.0.0
+Environment=NOAM_PORT=8000
+ExecStart=/opt/noam/venv/bin/noam-station
+Restart=on-failure
+RestartSec=3
+
+# הקשחה: קריאה בלבד לכל המערכת, כתיבה רק ליומנים/דוחות וליעד
+ProtectSystem=strict
+ReadWritePaths=/var/lib/noam /media/noam
+ReadOnlyPaths=/media/noam-src
+PrivateTmp=true
+NoNewPrivileges=true
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+LockPersonality=true
+# רשת: רק localhost והרשת הסגורה (ADR 0003). כפילות מכוונת ל-nftables.
+IPAddressDeny=any
+IPAddressAllow=localhost 10.77.0.0/24
+# גישה ל-USB (MTP/adb) דרך הקבוצה noam (udev)
+SupplementaryGroups=plugdev
+
+[Install]
+WantedBy=multi-user.target

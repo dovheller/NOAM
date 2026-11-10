@@ -18,7 +18,10 @@
 - שורש Shared Drive של Google Drive לא יכול לשמש יעד ל-`os.makedirs()`.
 - העתקה מוצלחת אינה סנכרון ענן שהושלם. אלה שני מצבים, וכל אחד מאומת בנפרד.
 - עברית בטרמינל של Windows מתהפכת (bidi). פלט בעברית עובר דרך הממשק או ה-PDF, לא דרך הטרמינל.
-- קריסה ב-worker thread חייבת להגיע לממשק כהודעה. כשל שקט אסור.
+- קריסה ב-worker thread חייבת להגיע לממשק כהודעה. כשל שקט אסור. ב-`station/`: כל חריגה ב-thread → הסשן "בוטל" עם קוד.
+- הקונסולה מקבלת **רק** `Station.operator_snapshot()`. שדה חדש לקונסולה → מוסיפים אותו שם, ו-`assert_operator_safe` בודק אותו. לא עוקפים.
+- מפתח i18n בשם של מתודת dict (`clear`, `items`, `get`…) מוחזר ב-Jinja כמתודה ומודפס כזבל. יש טסט שחוסם.
+- `fpdf2` עם text shaping: מזהים, hash ותאריכים נכתבים עם shaping כבוי (LTR נקי). `{nb}` לא נתמך עם shaping.
 
 ## WhatsApp (שכבה 2)
 - לא `adb backup`, לא `WhatsApp-Key-DB-Extractor`. פענוח וייצוא: `KnugiHK/WhatsApp-Chat-Exporter` (MIT), עם `--check-update` כבוי.
